@@ -20,7 +20,6 @@ export async function getAccounts(userId: string): Promise<VAccount[]> {
     .from('accounts')
     .select('id, user_id, name, type, currency, initial_balance, is_active, include_in_net_worth, color, created_at')
     .eq('user_id', userId)
-    .eq('is_active', true)
     .order('name')
 
   if (error) throw new Error(`getAccounts: ${error.message}`)
