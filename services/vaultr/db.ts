@@ -25,6 +25,12 @@ function getVaultrClient() {
 
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      headers: {
+        'apikey':        key,
+        'Authorization': `Bearer ${key}`,
+      },
+    },
   })
 }
 
