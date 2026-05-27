@@ -34,5 +34,6 @@ npm-debug.log*
 # Editor
 .idea/
 .vscode/
+.claude/
 *.swp
 *.swo
