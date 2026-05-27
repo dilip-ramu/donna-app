@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { categorizeInboxItem } from '@/lib/ai/categorize'
+import type { Json } from '@/lib/types/database'
 
 export async function POST(request: Request) {
   try {
@@ -55,7 +56,7 @@ export async function POST(request: Request) {
           priority: result.urgency ?? 'medium',
           due_date: result.deadline ?? null,
           project_id: result.project_id ?? null,
-          ai_metadata: result as unknown as Record<string, unknown>,
+          ai_metadata: result as unknown as Json,
         })
         .select('id')
         .single()
@@ -82,7 +83,7 @@ export async function POST(request: Request) {
           description: item.raw_content,
           status: 'raw',
           project_id: result.project_id ?? null,
-          ai_metadata: result as unknown as Record<string, unknown>,
+          ai_metadata: result as unknown as Json,
         })
         .select('id')
         .single()
@@ -103,10 +104,9 @@ export async function POST(request: Request) {
       .update({
         status: 'processed',
         processed_at: now,
-        dismissed_at: now,   // auto-dismiss so it doesn't pile up
         promoted_to,
         promoted_id,
-        ai_metadata: result as unknown as Record<string, unknown>,
+        ai_metadata: result as unknown as Json,
       })
       .eq('id', item_id)
 

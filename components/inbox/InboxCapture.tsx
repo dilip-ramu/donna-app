@@ -20,7 +20,8 @@ export default function InboxCapture({
   const [value, setValue] = useState('')
   const [isRecording, setIsRecording] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null)
 
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus()
@@ -63,8 +64,8 @@ export default function InboxCapture({
       return
     }
 
-    const SpeechRecognition =
-      window.SpeechRecognition ?? (window as unknown as { webkitSpeechRecognition: typeof SpeechRecognition }).webkitSpeechRecognition
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SpeechRecognition = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition
 
     if (!SpeechRecognition) return
 
@@ -73,7 +74,8 @@ export default function InboxCapture({
     recognition.interimResults = false
     recognition.lang = 'en-US'
 
-    recognition.onresult = (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (e: any) => {
       const transcript = e.results[0][0].transcript
       setValue(prev => prev ? `${prev} ${transcript}` : transcript)
     }

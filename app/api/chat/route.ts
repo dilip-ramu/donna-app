@@ -32,7 +32,7 @@ async function getUserContext(userId: string): Promise<string> {
     // Fetch recent inbox items
     const { data: inbox } = await supabase
       .from('inbox_items')
-      .select('content, category, created_at')
+      .select('raw_content, ai_metadata, created_at')
       .eq('user_id', userId)
       .is('dismissed_at', null)
       .order('created_at', { ascending: false })

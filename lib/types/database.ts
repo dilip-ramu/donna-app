@@ -1,8 +1,3 @@
-/**
- * Supabase database type definitions.
- * After running migrations, regenerate with:
- *   npx supabase gen types typescript --project-id YOUR_PROJECT_ID > lib/types/database.ts
- */
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export interface Database {
@@ -28,6 +23,7 @@ export interface Database {
           updated_at?: string
         }
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>
+        Relationships: []
       }
       inbox_items: {
         Row: {
@@ -59,6 +55,7 @@ export interface Database {
           deleted_at?: string | null
         }
         Update: Partial<Database['public']['Tables']['inbox_items']['Insert']>
+        Relationships: []
       }
       tasks: {
         Row: {
@@ -104,6 +101,7 @@ export interface Database {
           deleted_at?: string | null
         }
         Update: Partial<Database['public']['Tables']['tasks']['Insert']>
+        Relationships: []
       }
       projects: {
         Row: {
@@ -134,6 +132,7 @@ export interface Database {
           ai_metadata?: Json
         }
         Update: Partial<Database['public']['Tables']['projects']['Insert']>
+        Relationships: []
       }
       ideas: {
         Row: {
@@ -164,6 +163,7 @@ export interface Database {
           ai_metadata?: Json
         }
         Update: Partial<Database['public']['Tables']['ideas']['Insert']>
+        Relationships: []
       }
       meetings: {
         Row: {
@@ -204,6 +204,7 @@ export interface Database {
           ai_metadata?: Json
         }
         Update: Partial<Database['public']['Tables']['meetings']['Insert']>
+        Relationships: []
       }
       entity_links: {
         Row: {
@@ -232,6 +233,7 @@ export interface Database {
           metadata?: Json
         }
         Update: Partial<Database['public']['Tables']['entity_links']['Insert']>
+        Relationships: []
       }
       activity_log: {
         Row: {
@@ -254,6 +256,7 @@ export interface Database {
           metadata?: Json
         }
         Update: never
+        Relationships: []
       }
     }
     Views: Record<string, never>

@@ -28,7 +28,7 @@ export default function TasksClient({ initialTasks }: { initialTasks: Task[] }) 
     return a.due_date.localeCompare(b.due_date)
   })
 
-  const active   = sorted.filter(t => t.status !== 'someday' && t.priority !== 'someday')
+  const active   = sorted.filter(t => t.priority !== 'someday')
   const someday  = sorted.filter(t => t.priority === 'someday')
 
   return (

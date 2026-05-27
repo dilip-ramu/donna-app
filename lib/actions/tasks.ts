@@ -23,8 +23,8 @@ export async function createTask(
   }
 
   // Log activity
-  await supabase.from('activity_log').insert({
-    user_id: user.id, entity_type: 'task', entity_id: data.id,
+  if (data) await supabase.from('activity_log').insert({
+    user_id: user.id, entity_type: 'task', entity_id: (data as { id: string }).id,
     action: 'created', actor: 'user',
   })
 
