@@ -9,7 +9,7 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/donna.logo.png",
+      "src": "/apple-touch-icon.png",
       "sizes": "any",
       "type": "image/png",
       "purpose": "any maskable"

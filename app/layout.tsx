@@ -25,8 +25,8 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
   },
   icons: {
-    icon: '/donna.logo.png',
-    apple: '/donna.logo.png',
+    icon: '/apple-touch-icon.png',
+    apple: '/apple-touch-icon.png',
   },
   robots: { index: false, follow: false },
 }
@@ -47,8 +47,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} ${dancing.variable}`} suppressHydrationWarning>
       <head>
         {/* iOS PWA icon — must be explicit link, metadata API is unreliable for this */}
-        <link rel="apple-touch-icon" href="/donna.logo.png" />
-        <link rel="icon" type="image/png" href="/donna.logo.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" href="/apple-touch-icon.png" />
 
         {/* Prevent flash of wrong theme — executes before React hydrates */}
         <script dangerouslySetInnerHTML={{ __html:
