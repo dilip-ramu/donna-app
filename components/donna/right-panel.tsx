@@ -474,8 +474,8 @@ function ChatTab({ userId }: { userId: string }) {
       {/* ── Mode chips + Input — pinned to bottom ── */}
       <div className="shrink-0 border-t border-donna-border px-4 pt-3 pb-3 space-y-2">
 
-        {/* Mode selector chips — scrollable single row so all are always visible */}
-        <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
+        {/* Mode selector chips — wrapping rows, no scroll needed */}
+        <div className="flex flex-wrap gap-1.5">
           {MODES.map(mode => {
             const Icon = mode.icon
             const isActive = activeMode === mode.id
