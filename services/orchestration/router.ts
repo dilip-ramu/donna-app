@@ -33,16 +33,22 @@ export async function routeFinanceIntent(
           message: 'How much was the expense? (e.g. "₹500 dinner from HDFC Savings")',
         }
       }
-      return createTransaction({
-        userId,
-        type: 'expense',
-        amount: intent.amount,
-        accountHint: intent.accountHint,
-        categoryHint: intent.categoryHint,
-        description: deriveName(intent),
-        date: intent.dateHint ?? new Date().toISOString().slice(0, 10),
-        notes: intent.notes,
-      })
+      try {
+        return await createTransaction({
+          userId,
+          type: 'expense',
+          amount: intent.amount,
+          accountHint: intent.accountHint,
+          categoryHint: intent.categoryHint,
+          description: deriveName(intent),
+          date: intent.dateHint ?? new Date().toISOString().slice(0, 10),
+          notes: intent.notes,
+        })
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error'
+        console.error('[router] create_expense error:', msg)
+        return { status: 'error', message: `Could not log expense: ${msg}` }
+      }
     }
 
     // ── Create income ──────────────────────────────────────────────────────
@@ -53,16 +59,22 @@ export async function routeFinanceIntent(
           message: 'How much was received? (e.g. "₹50,000 salary into HDFC Savings")',
         }
       }
-      return createTransaction({
-        userId,
-        type: 'income',
-        amount: intent.amount,
-        accountHint: intent.accountHint,
-        categoryHint: intent.categoryHint,
-        description: deriveName(intent),
-        date: intent.dateHint ?? new Date().toISOString().slice(0, 10),
-        notes: intent.notes,
-      })
+      try {
+        return await createTransaction({
+          userId,
+          type: 'income',
+          amount: intent.amount,
+          accountHint: intent.accountHint,
+          categoryHint: intent.categoryHint,
+          description: deriveName(intent),
+          date: intent.dateHint ?? new Date().toISOString().slice(0, 10),
+          notes: intent.notes,
+        })
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error'
+        console.error('[router] create_income error:', msg)
+        return { status: 'error', message: `Could not log income: ${msg}` }
+      }
     }
 
     // ── Finance summary ────────────────────────────────────────────────────

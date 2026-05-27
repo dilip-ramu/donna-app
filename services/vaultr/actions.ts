@@ -49,7 +49,7 @@ export async function createTransaction(
   }
 
   // 2. Resolve category (optional — null is fine)
-  const expenseCats = categories.filter(c => c.type === type === true || c.type === 'expense')
+  const expenseCats = categories.filter(c => c.type === type || c.type === 'expense')
   const category = categoryHint ? resolveByName(expenseCats, categoryHint) : null
 
   // 3. Insert transaction

@@ -23,7 +23,10 @@ export async function getAccounts(userId: string): Promise<VAccount[]> {
     .eq('is_active', true)
     .order('name')
 
-  if (error) throw new Error(`getAccounts: ${error.message}`)
+  if (error) {
+    console.error(`getAccounts: ${error.message}`)
+    return []
+  }
   return (data ?? []) as VAccount[]
 }
 
@@ -35,7 +38,10 @@ export async function getCategories(userId: string): Promise<VCategory[]> {
     .eq('user_id', userId)
     .order('name')
 
-  if (error) throw new Error(`getCategories: ${error.message}`)
+  if (error) {
+    console.error(`getCategories: ${error.message}`)
+    return []
+  }
   return (data ?? []) as VCategory[]
 }
 
@@ -58,7 +64,7 @@ export async function getRecentTransactions(
     .order('created_at', { ascending: false })
     .limit(limit)
 
-  if (error) throw new Error(`getRecentTransactions: ${error.message}`)
+  if (error) { console.error(`getRecentTransactions: ${error.message}`); return [] }
 
   return ((data ?? []) as unknown as (VTransaction & {
     account: { name: string; currency: string } | null
