@@ -25,8 +25,8 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
   },
   icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: '/donna.logo.png',
+    apple: '/donna.logo.png',
   },
   robots: { index: false, follow: false },
 }
