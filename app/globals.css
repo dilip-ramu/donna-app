@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Color tokens ─────────────────────────────────────────────────────────── */
+:root {
+  /* Structural */
+  --c-bg:             #F4F4F8;
+  --c-surface:        #FFFFFF;
+  --c-elevated:       #F0F0F5;
+  --c-border:         #E8E8EE;
+  --c-border-subtle:  #F4F4F8;
+  /* Typography */
+  --c-text:           #111827;
+  --c-muted:          #6B7280;
+  --c-subtle:         #9CA3AF;
+  --c-faint:          #C4C4CC;
+  /* Brand */
+  --c-violet:         #7C3AED;
+  --c-violet-bg:      #F5F3FF;
+  --c-violet-border:  rgba(124,58,237,0.25);
+}
+
+html.dark {
+  --c-bg:             #0D0D12;
+  --c-surface:        #17171D;
+  --c-elevated:       #21212B;
+  --c-border:         #2A2A38;
+  --c-border-subtle:  #1E1E28;
+  --c-text:           #F0F0F5;
+  --c-muted:          #8A8AAA;
+  --c-subtle:         #56566A;
+  --c-faint:          #38384A;
+  --c-violet:         #8B5CF6;
+  --c-violet-bg:      #1C1030;
+  --c-violet-border:  rgba(139,92,246,0.30);
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+@layer base {
+  * { box-sizing: border-box; }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "cv02","cv03","cv04","cv11";
+    touch-action: manipulation;
+    /* Smooth theme transitions */
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  body {
+    @apply bg-donna-bg text-donna-text font-sans;
+    overscroll-behavior: none;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar { width: 3px; height: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 9999px; }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-offset-1;
+    ring-color: var(--c-violet-border);
+    ring-offset-color: var(--c-bg);
+  }
+
+  a, button { -webkit-tap-highlight-color: transparent; }
+
+  button, a, input, textarea, select {
+    transition-property: background-color, border-color, color, opacity, box-shadow, transform;
+    transition-duration: 120ms;
+    transition-timing-function: ease;
+  }
+}
+
+/* ── Components ───────────────────────────────────────────────────────────── */
+@layer components {
+  .donna-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    @apply rounded-xl;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  }
+
+  .dark .donna-card {
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  }
+
+  .donna-input {
+    width: 100%;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    color: var(--c-text);
+    @apply rounded-xl px-3 py-2 text-sm;
+  }
+
+  .donna-input::placeholder { color: var(--c-subtle); }
+
+  .donna-input:focus {
+    outline: none;
+    border-color: var(--c-violet-border);
+    box-shadow: 0 0 0 2px var(--c-violet-border);
+  }
+
+  .widget-header {
+    @apply flex items-center justify-between mb-3;
+  }
+
+  /* Page section card used in settings / pages */
+  .page-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    @apply rounded-2xl p-5;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+}
+
+/* ── Utilities ────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .pb-safe   { padding-bottom: env(safe-area-inset-bottom); }
+  .pt-safe   { padding-top:    env(safe-area-inset-top); }
+  .pl-safe   { padding-left:   env(safe-area-inset-left); }
+  .pr-safe   { padding-right:  env(safe-area-inset-right); }
+
+  /* Helper — converts inline styles to respect dark mode */
+  .c-surface  { background: var(--c-surface) !important; }
+  .c-elevated { background: var(--c-elevated) !important; }
+  .c-text     { color: var(--c-text) !important; }
+  .c-muted    { color: var(--c-muted) !important; }
+  .c-border   { border-color: var(--c-border) !important; }
+}
+
+/* ── iOS PWA / Mobile polish ──────────────────────────────────────────────── */
+
+/* Use dvh everywhere so the height excludes Safari's collapsible chrome */
+html, body {
+  min-height: 100dvh;
+}
+
+/* Disable callout + selection on nav buttons */
+nav a, nav button {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* Momentum scrolling in overflowing containers */
+.overflow-y-auto, .overflow-y-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Sheet animation — prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .transition-transform { transition: none !important; }
+}
+
+/* Make sure tap targets are at least 44×44 on mobile */
+@media (max-width: 767px) {
+  a, button {
+    min-height: 44px;
+  }
+  nav a, nav button {
+    min-height: unset; /* nav items are intentionally compact */
+  }
+}
