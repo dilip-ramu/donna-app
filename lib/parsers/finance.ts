@@ -149,6 +149,25 @@ function extractCategoryHint(text: string): string | null {
   return null
 }
 
+// ── Merchant / place extraction ────────────────────────────────────────────
+// Captures the place name from "at [Merchant Name]", e.g.
+//   "spent 500 at Burger King for food" → "Burger King"
+//   "lunch at The Blue Door from HDFC"  → "The Blue Door"
+
+const MERCHANT_SKIP = new Set(['a', 'an', 'the', 'home', 'work', 'school', 'office', 'this', 'that', 'my'])
+
+function extractMerchantHint(text: string): string | null {
+  // Match "at <Name>" where name ends at a preposition, comma, or end-of-string
+  const m = text.match(
+    /\bat\s+((?:the\s+)?[A-Za-z][A-Za-z0-9'&.\s-]{1,40}?)(?:\s+(?:for|from|using|via|on|through|with|yesterday|today|last)\b|[,.]|$)/i
+  )
+  if (!m) return null
+  const name = m[1].trim().replace(/\s{2,}/g, ' ')
+  if (MERCHANT_SKIP.has(name.toLowerCase())) return null
+  // Title-case the result
+  return name.replace(/\b\w/g, c => c.toUpperCase())
+}
+
 // ── Customer hint extraction ───────────────────────────────────────────────
 
 function extractCustomerHint(text: string): string | null {
@@ -206,6 +225,7 @@ export function parseFinanceIntent(text: string): FinanceIntent {
     currency:     'INR',
     accountHint:  extractAccountHint(text),
     categoryHint: extractCategoryHint(text),
+    merchantHint: extractMerchantHint(text),
     dateHint:     extractDate(text),
     customerHint: extractCustomerHint(text),
     notes:        null,

@@ -168,6 +168,7 @@ export interface FinanceIntent {
   currency: string
   accountHint: string | null  // "HDFC Savings", "credit card"
   categoryHint: string | null // "dinner", "fuel", "salary"
+  merchantHint: string | null // "Burger King", "Hotel Grand" — from "at [place]"
   dateHint: string | null     // ISO YYYY-MM-DD resolved date
   customerHint: string | null // "DHL", "Netto"
   notes: string | null

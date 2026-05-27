@@ -169,13 +169,18 @@ export async function routeFinanceIntent(
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function deriveName(intent: FinanceIntent): string {
+  // Merchant name ("at Burger King") is the best transaction name
+  if (intent.merchantHint) return intent.merchantHint
+
+  // Fall back to category hint as a human-readable name
   if (intent.categoryHint) {
     return intent.categoryHint.charAt(0).toUpperCase() + intent.categoryHint.slice(1)
   }
-  // Strip intent keywords from raw text to get a description
+
+  // Last resort: strip noise from the raw input
   const cleaned = intent.raw
     .replace(/₹[\d,]+|rs\.?\s*[\d,]+|[\d,]+\s*(?:rupees?|inr)/gi, '')
-    .replace(/\b(?:log|add|record|expense|from|using|via|on|today|yesterday)\b/gi, '')
+    .replace(/\b(?:log|add|record|expense|from|using|via|on|today|yesterday|i|spent|paid)\b/gi, '')
     .replace(/\s{2,}/g, ' ')
     .trim()
   return cleaned.slice(0, 60) || (intent.kind === 'create_income' ? 'Income' : 'Expense')
