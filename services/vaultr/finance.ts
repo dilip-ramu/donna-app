@@ -23,10 +23,7 @@ export async function getAccounts(userId: string): Promise<VAccount[]> {
     .eq('is_active', true)
     .order('name')
 
-  if (error) {
-    console.error(`getAccounts: ${error.message}`)
-    return []
-  }
+  if (error) throw new Error(`getAccounts: ${error.message}`)
   return (data ?? []) as VAccount[]
 }
 
@@ -38,10 +35,7 @@ export async function getCategories(userId: string): Promise<VCategory[]> {
     .eq('user_id', userId)
     .order('name')
 
-  if (error) {
-    console.error(`getCategories: ${error.message}`)
-    return []
-  }
+  if (error) throw new Error(`getCategories: ${error.message}`)
   return (data ?? []) as VCategory[]
 }
 
@@ -155,7 +149,7 @@ export async function getRecoverablesSummary(userId: string): Promise<Recoverabl
   const [allocRes, batchRes] = await Promise.all([
     db
       .from('recoverable_allocations')
-      .select('customer_name, recoverable_amount, status')
+      .select('supplier_name, recoverable_amount, status')
       .eq('user_id', userId),
 
     db
@@ -168,7 +162,7 @@ export async function getRecoverablesSummary(userId: string): Promise<Recoverabl
   if (allocRes.error) throw new Error(`getRecoverablesSummary alloc: ${allocRes.error.message}`)
   if (batchRes.error) throw new Error(`getRecoverablesSummary batch: ${batchRes.error.message}`)
 
-  const allocations = (allocRes.data ?? []) as Pick<VRecoverableAllocation, 'customer_name' | 'recoverable_amount' | 'status'>[]
+  const allocations = (allocRes.data ?? []) as { supplier_name: string; recoverable_amount: number; status: string }[]
   const batches     = batchRes.data ?? []
 
   let totalPending = 0, totalBilled = 0, totalPaid = 0
@@ -180,10 +174,10 @@ export async function getRecoverablesSummary(userId: string): Promise<Recoverabl
     else if (a.status === 'billed') { totalBilled = round2(totalBilled + amount) }
     else if (a.status === 'paid')   { totalPaid   = round2(totalPaid   + amount) }
 
-    const entry = customerMap.get(a.customer_name) ?? { pending: 0, total: 0 }
+    const entry = customerMap.get(a.supplier_name) ?? { pending: 0, total: 0 }
     entry.total = round2(entry.total + amount)
     if (a.status === 'pending') entry.pending = round2(entry.pending + amount)
-    customerMap.set(a.customer_name, entry)
+    customerMap.set(a.supplier_name, entry)
   }
 
   const topCustomers = Array.from(customerMap.entries())
@@ -211,23 +205,23 @@ export async function getSupplierBalances(userId: string): Promise<SupplierBalan
 
   const { data, error } = await db
     .from('recoverable_allocations')
-    .select('customer_name, recoverable_amount, status')
+    .select('supplier_name, recoverable_amount, status')
     .eq('user_id', userId)
 
   if (error) throw new Error(`getSupplierBalances: ${error.message}`)
 
   const map = new Map<string, SupplierBalanceLine>()
 
-  for (const a of (data ?? []) as Pick<VRecoverableAllocation, 'customer_name' | 'recoverable_amount' | 'status'>[]) {
-    const entry = map.get(a.customer_name) ?? {
-      customerName: a.customer_name,
+  for (const a of (data ?? []) as { supplier_name: string; recoverable_amount: number; status: string }[]) {
+    const entry = map.get(a.supplier_name) ?? {
+      customerName: a.supplier_name,
       pendingAmount: 0, billedAmount: 0, paidAmount: 0, totalAmount: 0,
     }
     entry.totalAmount = round2(entry.totalAmount + a.recoverable_amount)
     if (a.status === 'pending')  entry.pendingAmount = round2(entry.pendingAmount + a.recoverable_amount)
     if (a.status === 'billed')   entry.billedAmount  = round2(entry.billedAmount  + a.recoverable_amount)
     if (a.status === 'paid')     entry.paidAmount    = round2(entry.paidAmount    + a.recoverable_amount)
-    map.set(a.customer_name, entry)
+    map.set(a.supplier_name, entry)
   }
 
   return Array.from(map.values()).sort((a, b) => b.pendingAmount - a.pendingAmount)
