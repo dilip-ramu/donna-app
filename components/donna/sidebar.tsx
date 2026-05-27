@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
@@ -31,16 +32,25 @@ export default function Sidebar({ displayName }: SidebarProps) {
     <div className="flex flex-col h-full w-full bg-donna-surface border-r border-donna-border select-none transition-colors duration-200">
 
       {/* ── Logo ── */}
-      <div className="pt-6 pb-5 shrink-0 md:px-3.5 lg:px-5">
-        <div
-          className="w-7 h-7 rounded-lg items-center justify-center text-white text-xs font-bold md:flex lg:hidden"
-          style={{ background: 'linear-gradient(135deg, var(--c-violet) 0%, #9333EA 100%)' }}
-          title="Donna"
-        >D</div>
-        <span
-          className="text-3xl leading-none tracking-wide md:hidden lg:inline"
-          style={{ fontFamily: 'var(--font-script), cursive', color: 'var(--c-text)' }}
-        >Donna</span>
+      <div className="pt-6 pb-5 shrink-0 md:px-3.5 lg:px-5 flex items-center">
+        {/* Collapsed (md): small square icon */}
+        <Image
+          src="/donna-letter-logo.png"
+          alt="Donna"
+          width={28}
+          height={28}
+          className="rounded-lg md:block lg:hidden"
+          style={{ objectFit: 'contain' }}
+        />
+        {/* Expanded (lg): wider logo */}
+        <Image
+          src="/donna-letter-logo.png"
+          alt="Donna"
+          width={100}
+          height={36}
+          className="md:hidden lg:block"
+          style={{ objectFit: 'contain', objectPosition: 'left' }}
+        />
       </div>
 
       {/* ── Nav ── */}
