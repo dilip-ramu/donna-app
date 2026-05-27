@@ -46,6 +46,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${dancing.variable}`} suppressHydrationWarning>
       <head>
+        {/* iOS PWA icon — must be explicit link, metadata API is unreliable for this */}
+        <link rel="apple-touch-icon" href="/donna.logo.png" />
+        <link rel="icon" type="image/png" href="/donna.logo.png" />
+
         {/* Prevent flash of wrong theme — executes before React hydrates */}
         <script dangerouslySetInnerHTML={{ __html:
           `(function(){try{var t=localStorage.getItem('donna-theme');` +
