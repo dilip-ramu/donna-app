@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import {
   Sparkles, Send, Plus, Check, Loader2, Trash2,
   MessageSquare, BookMarked, Inbox,
-  CheckSquare, Brain, CalendarDays, PenLine, X,
+  CheckSquare, Brain, CalendarDays, PenLine, X, Landmark, ExternalLink,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { InboxItem } from '@/lib/types'
@@ -14,7 +14,7 @@ import { BORDER_COLORS } from '@/lib/donna-theme'
 
 type Tab = 'chat' | 'memory' | 'inbox'
 
-type ChatMode = 'tasks' | 'memory' | 'calendar' | 'draft'
+type ChatMode = 'tasks' | 'memory' | 'calendar' | 'draft' | 'finance'
 
 interface ChatMessage {
   id: string
@@ -87,11 +87,61 @@ const MODES: {
     activeBg: 'rgba(245,158,11,0.08)',
     systemHint: 'The user wants help drafting or writing something — email, message, document, or any other text.',
   },
+  {
+    id: 'finance',
+    icon: Landmark,
+    label: 'Finance',
+    description: 'Log expenses · check balances',
+    placeholder: 'Log ₹500 dinner from HDFC Savings…',
+    color: '#10B981',
+    bg: '#ECFDF5',
+    activeBg: 'rgba(16,185,129,0.08)',
+    systemHint: 'The user wants to log a financial transaction or query their finance data in Vaultr.',
+  },
 ]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function uid() { return Math.random().toString(36).slice(2) }
+
+/** Render assistant message — handles [text](url) links and **bold** inline */
+function renderMessage(content: string): React.ReactNode {
+  const parts: React.ReactNode[] = []
+  // Split on markdown links [label](url)
+  const linkRe = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g
+  let last = 0, m: RegExpExecArray | null
+
+  while ((m = linkRe.exec(content)) !== null) {
+    if (m.index > last) parts.push(renderBold(content.slice(last, m.index), parts.length + 'pre'))
+    parts.push(
+      <a
+        key={m.index}
+        href={m[2]}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 underline text-[#7C3AED] hover:opacity-80"
+      >
+        {m[1]} <ExternalLink size={10} />
+      </a>
+    )
+    last = m.index + m[0].length
+  }
+  if (last < content.length) parts.push(renderBold(content.slice(last), 'tail'))
+  return <span className="whitespace-pre-wrap">{parts}</span>
+}
+
+function renderBold(text: string, key: string | number): React.ReactNode {
+  const boldRe = /\*\*([^*]+)\*\*/g
+  const parts: React.ReactNode[] = []
+  let last = 0, m: RegExpExecArray | null
+  while ((m = boldRe.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index))
+    parts.push(<strong key={m.index}>{m[1]}</strong>)
+    last = m.index + m[0].length
+  }
+  if (last < text.length) parts.push(text.slice(last))
+  return <span key={key}>{parts}</span>
+}
 
 function formatNoteDate(iso: string) {
   const d = new Date(iso)
@@ -235,6 +285,52 @@ function ChatTab({ userId }: { userId: string }) {
     }
   }
 
+  // ── Finance mode — calls Donna's finance action API ──────────────────────
+  const handleFinanceMode = async (content: string) => {
+    const userMsg: ChatMessage = { id: uid(), role: 'user', content, mode: 'finance', ts: new Date() }
+    const respId = uid()
+    const pendingMsg: ChatMessage = { id: respId, role: 'assistant', content: '', ts: new Date() }
+    setMessages(prev => [...prev, userMsg, pendingMsg])
+    setIsBusy(true)
+
+    try {
+      const res = await fetch('/api/finance/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: content }),
+      })
+
+      const json = await res.json() as {
+        result?: { status: string; message: string; redirectUrl?: string }
+        error?: string
+      }
+
+      if (!res.ok || json.error) {
+        setMessages(prev => prev.map(m =>
+          m.id === respId ? { ...m, content: json.error ?? 'Finance action failed.' } : m
+        ))
+        return
+      }
+
+      const result = json.result!
+      let reply = result.message
+
+      // Append a clickable link for redirect results
+      if (result.status === 'redirect' && result.redirectUrl) {
+        reply += `\n\n[Open in Vaultr →](${result.redirectUrl})`
+      }
+
+      setMessages(prev => prev.map(m => m.id === respId ? { ...m, content: reply } : m))
+    } catch {
+      setMessages(prev => prev.map(m =>
+        m.id === respId ? { ...m, content: 'Could not reach Vaultr. Check your connection.' } : m
+      ))
+    } finally {
+      setIsBusy(false)
+      inputRef.current?.focus()
+    }
+  }
+
   // ── AI chat (Draft mode or no mode) ──────────────────────────────────────
   const handleChat = async (content: string, mode: ChatMode | null) => {
     const modeConfig = mode ? MODES.find(m => m.id === mode) : null
@@ -298,6 +394,9 @@ function ChatTab({ userId }: { userId: string }) {
     // Action modes → direct DB writes, instant confirmation
     if (activeMode === 'tasks' || activeMode === 'memory' || activeMode === 'calendar') {
       await handleActionMode(content, activeMode)
+    } else if (activeMode === 'finance') {
+      // Finance mode → Vaultr integration API
+      await handleFinanceMode(content)
     } else {
       // Draft mode or no mode → stream AI response
       await handleChat(content, activeMode)
@@ -364,7 +463,7 @@ function ChatTab({ userId }: { userId: string }) {
                           style={{ animationDelay: `${delay}ms` }} />
                       ))}
                     </span>
-                  ) : msg.content}
+                  ) : renderMessage(msg.content)}
                 </div>
               </div>
             </div>
@@ -375,8 +474,8 @@ function ChatTab({ userId }: { userId: string }) {
       {/* ── Mode chips + Input — pinned to bottom ── */}
       <div className="shrink-0 border-t border-donna-border px-4 pt-3 pb-3 space-y-2">
 
-        {/* Mode selector chips — horizontal, just above textarea */}
-        <div className="flex gap-1.5 flex-wrap">
+        {/* Mode selector chips — scrollable single row so all are always visible */}
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
           {MODES.map(mode => {
             const Icon = mode.icon
             const isActive = activeMode === mode.id
@@ -599,7 +698,7 @@ export default function RightPanel({ userId, memoryNotes, inboxItems }: RightPan
   ]
 
   return (
-    <aside className="hidden lg:flex flex-col w-[320px] shrink-0 bg-donna-surface border-l border-donna-border overflow-hidden">
+    <aside className="flex flex-col w-full lg:w-[320px] shrink-0 bg-donna-surface border-l border-donna-border overflow-hidden">
 
       {/* Header */}
       <div className="shrink-0 px-5 pt-5 pb-0">

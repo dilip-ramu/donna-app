@@ -118,6 +118,9 @@ html.dark {
 
 /* ── Utilities ────────────────────────────────────────────────────────────── */
 @layer utilities {
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
   .pb-safe   { padding-bottom: env(safe-area-inset-bottom); }
   .pt-safe   { padding-top:    env(safe-area-inset-top); }
   .pl-safe   { padding-left:   env(safe-area-inset-left); }
