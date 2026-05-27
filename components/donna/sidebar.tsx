@@ -37,8 +37,8 @@ export default function Sidebar({ displayName }: SidebarProps) {
         <Image
           src="/donna-letter-logo.png"
           alt="Donna"
-          width={28}
-          height={28}
+          width={45}
+          height={45}
           className="rounded-lg md:block lg:hidden"
           style={{ objectFit: 'contain' }}
         />
@@ -46,8 +46,8 @@ export default function Sidebar({ displayName }: SidebarProps) {
         <Image
           src="/donna-letter-logo.png"
           alt="Donna"
-          width={100}
-          height={36}
+          width={160}
+          height={58}
           className="md:hidden lg:block"
           style={{ objectFit: 'contain', objectPosition: 'left' }}
         />
