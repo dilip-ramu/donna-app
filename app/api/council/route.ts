@@ -8,6 +8,7 @@ import type { MemberId } from '@/types/council/member'
 import type { ApiCouncilMessage } from '@/types/council/message'
 import type { StreamEvent } from '@/types/council/routing'
 import type { RoutingDecision } from '@/types/council/participation'
+import type { ExpenseIntent } from '@/lib/learned-accounts'
 
 export const runtime    = 'nodejs'
 export const maxDuration = 60
@@ -122,12 +123,14 @@ async function* generateMemberResponse(
   messages: ApiCouncilMessage[],
   userContext: string,
   routing: RoutingDecision,
+  expenseIntent?: ExpenseIntent | null,
 ): AsyncGenerator<string> {
   const member    = getMember(memberId)
   const systemPrompt = buildSystemPrompt(memberId, {
     userContext,
-    participants: routing.participants,
-    isDonnaAlone: routing.isDonnaAlone,
+    participants:  routing.participants,
+    isDonnaAlone:  routing.isDonnaAlone,
+    expenseIntent: memberId === 'aega' ? expenseIntent : null,
   })
 
   const history   = buildApiHistory(messages)
@@ -163,9 +166,10 @@ function encodeEvent(encoder: TextEncoder, event: StreamEvent): Uint8Array {
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, userId } = await req.json() as {
+    const { messages, userId, expenseIntent } = await req.json() as {
       messages: ApiCouncilMessage[]
       userId: string
+      expenseIntent?: ExpenseIntent | null
     }
 
     if (!messages?.length || !userId) {
@@ -196,7 +200,7 @@ export async function POST(req: NextRequest) {
             send({ phase: 'member_start', memberId })
 
             try {
-              for await (const text of generateMemberResponse(memberId, messages, userContext, routing)) {
+              for await (const text of generateMemberResponse(memberId, messages, userContext, routing, expenseIntent)) {
                 send({ phase: 'text', memberId, text })
               }
             } catch (err) {

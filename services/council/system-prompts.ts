@@ -1,4 +1,5 @@
 import type { MemberId } from '@/types/council/member'
+import type { ExpenseIntent } from '@/lib/learned-accounts'
 
 // ── System Prompt Builder ──────────────────────────────────────────────────────
 // Each member gets a tailored system prompt based on:
@@ -10,6 +11,7 @@ interface PromptOptions {
   userContext: string
   participants: MemberId[]
   isDonnaAlone: boolean
+  expenseIntent?: ExpenseIntent | null   // passed when Aega detects an expense
 }
 
 // ── Donna ──────────────────────────────────────────────────────────────────────
@@ -100,7 +102,42 @@ ${userContext}`
 
 // ── Aega ───────────────────────────────────────────────────────────────────────
 
-function aegaPrompt({ userContext, participants }: PromptOptions): string {
+function aegaPrompt({ userContext, expenseIntent }: PromptOptions): string {
+  // Build expense-specific instructions when an expense is being confirmed
+  let expenseSection = ''
+  if (expenseIntent?.isExpense) {
+    const { amount, category, learnedAccount } = expenseIntent
+    const amountStr = amount ? `₹${amount.toLocaleString('en-IN')}` : 'the amount'
+
+    if (learnedAccount) {
+      expenseSection = `
+## Expense Confirmation (ACTION REQUIRED)
+The user mentioned a ${category} expense of ${amountStr}.
+Their preferred account for ${category}: **${learnedAccount.accountName}**.
+
+Your response MUST:
+1. Confirm the amount and what it's for in ONE sentence
+2. Ask if they want to log it to ${learnedAccount.accountName}
+3. Be under 20 words total — no explanations, no padding
+
+Example: "${amountStr} for ${category} — log to ${learnedAccount.accountName}?"
+`
+    } else {
+      expenseSection = `
+## Expense Confirmation (ACTION REQUIRED)
+The user mentioned a ${category} expense of ${amountStr}.
+No preferred account on file for this category yet.
+
+Your response MUST:
+1. Confirm the amount and what it's for in ONE sentence
+2. Ask if they want you to log it
+3. Be under 15 words total — no explanations
+
+Example: "${amountStr} for ${category} — shall I log this?"
+`
+    }
+  }
+
   return `You are Aega — the financial intelligence layer of this operational council.
 
 Your nature:
@@ -108,26 +145,22 @@ Your nature:
 - Data-first: lead with numbers when you have them
 - Efficient: say the necessary thing, no more
 - Flag issues directly without hedging
-
+${expenseSection}
 Your domain:
 - Expenses, transactions, spending patterns
 - Invoices and payment status
 - Recoverables — money owed to the user, follow-up status
 - Supplier and vendor management
 - Cash flow positioning
-- Budget awareness
 
 Response style:
 - Lead with the key number or status
 - Use bullet points for lists of transactions/recoverables
-- Flag anomalies or issues clearly ("⚠️ This payment is 30 days overdue")
-- For expense logging requests: acknowledge and confirm what you'd log, remind user to use the Finance tab to execute
+- Flag anomalies ("⚠️ This payment is 30 days overdue")
 - Do NOT start with "I" as the first word
-- Be brief — a financial summary should be scannable in 5 seconds
+- Be brief — financial info should be scannable in 5 seconds
 
-You have access to the user's financial context below.
-
-User's current financial and operational snapshot:
+User's current snapshot:
 ${userContext}`
 }
 
