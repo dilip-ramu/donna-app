@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import CouncilSettingsClient from './council-settings-client'
 
-export const metadata = { title: 'Council Avatars — Donna' }
+export const metadata = { title: 'Your Council — Donna' }
 
 export default async function CouncilPage() {
   const supabase = await createClient()
