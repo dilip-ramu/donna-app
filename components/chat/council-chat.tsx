@@ -1,14 +1,12 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Send, Trash2, Users, Check, Loader2, Video } from 'lucide-react'
+import { Send, Trash2, Users, Video } from 'lucide-react'
 import MemberMessage from './member-message'
 import TypingIndicator from './typing-indicator'
 import MemberPresence from './member-presence'
 import { getMember } from '@/services/council/member-registry'
-import {
-  detectExpenseIntent, learnAccount, CONFIRM_RE, CANCEL_RE,
-} from '@/lib/learned-accounts'
+import { detectExpenseIntent, learnAccount } from '@/lib/learned-accounts'
 import type { CouncilMessage } from '@/types/council/message'
 import type { ApiCouncilMessage } from '@/types/council/message'
 import type { MemberId } from '@/types/council/member'
@@ -63,72 +61,10 @@ function isConferenceTrigger(text: string): boolean {
 
 const SUGGESTIONS = [
   "What's on my plate today?",
-  "How should I plan my next launch?",
-  "What are my pending recoverables?",
-  "Help me think through my priorities this week",
+  "Aega, be direct — is my spending okay?",
+  "Professor, plan out my next launch",
+  "Arrange a conference on my travel budget",
 ]
-
-// ── Pending expense types ──────────────────────────────────────────────────────
-
-interface AccountChoice { id: string; name: string; type: string }
-
-interface PendingExpense {
-  intent:          ExpenseIntent
-  accountChoices?: AccountChoice[]
-}
-
-// ── Action bar ─────────────────────────────────────────────────────────────────
-
-function ExpenseActionBar({
-  pending, onConfirm, onPickAccount, onCancel, logging,
-}: {
-  pending:       PendingExpense
-  onConfirm:     (accountId?: string) => void
-  onPickAccount: (id: string, name: string, type: string) => void
-  onCancel:      () => void
-  logging:       boolean
-}) {
-  const aega       = getMember('aega')
-  const learnedAcc = pending.intent.learnedAccount
-
-  if (pending.accountChoices?.length) {
-    return (
-      <div className="flex flex-col gap-2 pl-9 mt-1 animate-fade-in">
-        <p className="text-[10px] text-donna-subtle px-0.5">Pick an account:</p>
-        <div className="flex flex-wrap gap-1.5">
-          {pending.accountChoices.map(acc => (
-            <button key={acc.id} onClick={() => onPickAccount(acc.id, acc.name, acc.type)} disabled={logging}
-              className="flex items-center gap-1 text-[11px] font-medium px-3 py-1.5 rounded-xl border transition-all disabled:opacity-50"
-              style={{ borderColor: aega.accentColor + '60', color: aega.accentColor, background: aega.accentBg }}>
-              {acc.name}
-              <span className="text-[9px] opacity-60 capitalize">{acc.type}</span>
-            </button>
-          ))}
-          <button onClick={onCancel} className="text-[11px] px-3 py-1.5 rounded-xl text-donna-subtle hover:text-donna-text transition-colors">Cancel</button>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex items-center gap-2 pl-9 mt-1 animate-fade-in">
-      <button onClick={() => onConfirm(learnedAcc?.accountId)} disabled={logging}
-        className="flex items-center gap-1.5 text-[11px] font-semibold px-3.5 py-1.5 rounded-xl text-white transition-all disabled:opacity-60"
-        style={{ background: aega.accentColor }}>
-        {logging
-          ? <><Loader2 size={11} className="animate-spin" /> Logging…</>
-          : <><Check size={11} /> {learnedAcc ? `Log to ${learnedAcc.accountName}` : 'Yes, log it'}</>}
-      </button>
-      {learnedAcc && (
-        <button onClick={() => onConfirm(undefined)} disabled={logging}
-          className="text-[11px] text-donna-subtle hover:text-donna-text transition-colors px-2 py-1.5">
-          Different account
-        </button>
-      )}
-      <button onClick={onCancel} className="text-[11px] text-donna-subtle hover:text-donna-text transition-colors px-2 py-1.5">Cancel</button>
-    </div>
-  )
-}
 
 // ── Conference round divider ───────────────────────────────────────────────────
 
@@ -168,15 +104,12 @@ interface CouncilChatProps {
 }
 
 export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
-  const [messages, setMessages]           = useState<CouncilMessage[]>([])
-  const [input, setInput]                 = useState('')
-  const [isBusy, setIsBusy]               = useState(false)
-  const [typingMembers, setTypingMembers] = useState<MemberId[]>([])
-  const [mounted, setMounted]             = useState(false)
+  const [messages, setMessages]             = useState<CouncilMessage[]>([])
+  const [input, setInput]                   = useState('')
+  const [isBusy, setIsBusy]                 = useState(false)
+  const [typingMembers, setTypingMembers]   = useState<MemberId[]>([])
+  const [mounted, setMounted]               = useState(false)
   const [conferenceMode, setConferenceMode] = useState(false)
-
-  const [pendingExpense, setPendingExpense]   = useState<PendingExpense | null>(null)
-  const [expenseLogging, setExpenseLogging]   = useState(false)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLTextAreaElement>(null)
@@ -184,7 +117,7 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
 
   useEffect(() => { setMessages(loadMessages(userId)); setMounted(true) }, [userId])
   useEffect(() => { if (mounted) saveMessages(userId, messages) }, [messages, userId, mounted])
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, typingMembers, pendingExpense])
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, typingMembers])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
@@ -192,41 +125,30 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
     e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
   }
 
-  const addAegaMessage = (content: string) => {
-    setMessages(prev => [...prev, { id: uid(), role: 'council', memberId: 'aega', content, timestamp: Date.now() }])
+  const addDonnaMessage = (content: string) => {
+    setMessages(prev => [...prev, { id: uid(), role: 'council', memberId: 'donna', content, timestamp: Date.now() }])
   }
 
-  // ── Expense confirm ────────────────────────────────────────────────────────────
-  const handleExpenseConfirm = useCallback(async (accountId?: string) => {
-    if (!pendingExpense) return
-    setExpenseLogging(true)
+  // ── Silent background expense logging ─────────────────────────────────────────
+  // Donna already acknowledged the expense in her streamed reply.
+  // This just writes the record to Vaultr — no UI feedback needed.
+  const silentLogExpense = useCallback(async (intent: ExpenseIntent) => {
+    if (!intent.isExpense || !intent.learnedAccount) return
     try {
       const res  = await fetch('/api/finance/action', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: pendingExpense.intent.rawText, accountId: accountId ?? pendingExpense.intent.learnedAccount?.accountId ?? undefined }),
+        body:   JSON.stringify({ text: intent.rawText, accountId: intent.learnedAccount.accountId }),
       })
-      const json = await res.json() as { result?: { status: string; message: string; redirectUrl?: string; accounts?: AccountChoice[] }; error?: string }
-
-      if (!res.ok || json.error) { addAegaMessage(`Couldn't log that — ${json.error ?? 'something went wrong.'}`); setPendingExpense(null); return }
-
-      const result = json.result!
-      if (result.status === 'choose_account' && result.accounts?.length) {
-        setPendingExpense(prev => prev ? { ...prev, accountChoices: result.accounts } : null); return
+      const json = await res.json() as { result?: { status: string }; error?: string }
+      if (json.result?.status === 'success' && intent.category) {
+        learnAccount(intent.category, {
+          accountId:   intent.learnedAccount.accountId,
+          accountName: intent.learnedAccount.accountName,
+          accountType: intent.learnedAccount.accountType,
+        })
       }
-
-      const usedId   = accountId ?? pendingExpense.intent.learnedAccount?.accountId
-      const usedName = accountId ? (pendingExpense.accountChoices?.find(a => a.id === accountId)?.name ?? '') : (pendingExpense.intent.learnedAccount?.accountName ?? '')
-      const usedType = accountId ? (pendingExpense.accountChoices?.find(a => a.id === accountId)?.type ?? '') : (pendingExpense.intent.learnedAccount?.accountType ?? '')
-      if (usedId && pendingExpense.intent.category) learnAccount(pendingExpense.intent.category, { accountId: usedId, accountName: usedName, accountType: usedType })
-
-      addAegaMessage(`Done.${result.redirectUrl ? ` [Open in Vaultr →](${result.redirectUrl})` : ''}`)
-      setPendingExpense(null)
-    } catch { addAegaMessage("Couldn't reach Vaultr. Check your connection."); setPendingExpense(null) }
-    finally { setExpenseLogging(false) }
-  }, [pendingExpense])
-
-  const handleExpensePickAccount = useCallback((id: string, name: string, type: string) => { handleExpenseConfirm(id) }, [handleExpenseConfirm])
-  const handleExpenseCancel      = useCallback(() => { setPendingExpense(null); addAegaMessage("No problem — skipped.") }, [])
+    } catch { /* silent */ }
+  }, [])
 
   // ── Conference stream ──────────────────────────────────────────────────────────
   const runConference = useCallback(async (topic: string) => {
@@ -305,7 +227,7 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
       }
 
     } catch (err) {
-      addAegaMessage(`Conference failed — ${err instanceof Error ? err.message : 'please try again'}`)
+      addDonnaMessage(`Conference failed — ${err instanceof Error ? err.message : 'please try again'}`)
     } finally {
       setIsBusy(false)
       setConferenceMode(false)
@@ -321,26 +243,21 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
     setInput('')
     if (inputRef.current) inputRef.current.style.height = 'auto'
 
-    if (pendingExpense && !pendingExpense.accountChoices) {
-      if (CONFIRM_RE.test(content)) { handleExpenseConfirm(pendingExpense.intent.learnedAccount?.accountId); return }
-      if (CANCEL_RE.test(content))  { handleExpenseCancel(); return }
-    }
-
-    // Detect conference trigger — ask Donna to set it up → run conference on underlying topic
+    // Conference trigger — extract topic and run conference flow
     if (isConferenceTrigger(content)) {
       const userMsg: CouncilMessage = { id: uid(), role: 'user', content, timestamp: Date.now() }
       setMessages(prev => [...prev, userMsg])
-      // Extract topic: strip the trigger phrase, use what's left (or the whole message as topic)
       const topic = content.replace(CONFERENCE_RE, '').replace(/^[\s,.:;-]+|[\s,.:;-]+$/g, '').trim() || content
-      await runConference(topic || content)
+      await runConference(topic)
       return
     }
 
+    // Detect expense before sending so we can silent-log after Donna replies
     const expenseIntent = detectExpenseIntent(content)
+
     const userMsg: CouncilMessage = { id: uid(), role: 'user', content, timestamp: Date.now() }
     setMessages(prev => [...prev, userMsg])
     setIsBusy(true)
-    if (expenseIntent.isExpense) setPendingExpense({ intent: expenseIntent })
 
     busyTimer.current = setTimeout(() => setIsBusy(false), 45_000)
 
@@ -385,6 +302,10 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
             else if (event.phase === 'done') {
               setTypingMembers([]); setIsBusy(false)
               if (busyTimer.current) clearTimeout(busyTimer.current)
+              // Donna acknowledged inline — now silently write the record
+              if (expenseIntent.isExpense && expenseIntent.learnedAccount) {
+                silentLogExpense(expenseIntent)
+              }
             }
           } catch { /* malformed */ }
         }
@@ -396,22 +317,20 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
         flush(decoder.decode(value, { stream: true }))
       }
     } catch (err) {
-      addAegaMessage(`Something went wrong — ${err instanceof Error ? err.message : 'please try again'}`)
+      addDonnaMessage(`Something went wrong — ${err instanceof Error ? err.message : 'please try again'}`)
     } finally {
       setTypingMembers([]); setIsBusy(false)
       if (busyTimer.current) clearTimeout(busyTimer.current)
     }
-  }, [input, isBusy, messages, userId, pendingExpense, handleExpenseConfirm, handleExpenseCancel, runConference])
+  }, [input, isBusy, messages, userId, runConference, silentLogExpense])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
   }
 
-  const handleClear = () => { setMessages([]); setPendingExpense(null); saveMessages(userId, []) }
+  const handleClear = () => { setMessages([]); saveMessages(userId, []) }
 
-  const isEmpty       = messages.length === 0
-  const lastAegaIdx   = pendingExpense ? [...messages].reverse().findIndex(m => m.memberId === 'aega' && !m.isStreaming) : -1
-  const lastAegaMsgId = lastAegaIdx >= 0 ? messages[messages.length - 1 - lastAegaIdx]?.id : null
+  const isEmpty = messages.length === 0
 
   return (
     <div className="flex flex-col h-full">
@@ -472,21 +391,7 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
                 if (msg.round === 0) return <ConferenceBanner key={msg.id} topic={msg.roundLabel ?? ''} />
                 return <ConferenceDivider key={msg.id} label={msg.roundLabel ?? ''} round={msg.round ?? 1} />
               }
-
-              return (
-                <div key={msg.id}>
-                  <MemberMessage message={msg} userDisplayName={displayName} />
-                  {pendingExpense && msg.id === lastAegaMsgId && !isBusy && (
-                    <ExpenseActionBar
-                      pending={pendingExpense}
-                      onConfirm={handleExpenseConfirm}
-                      onPickAccount={handleExpensePickAccount}
-                      onCancel={handleExpenseCancel}
-                      logging={expenseLogging}
-                    />
-                  )}
-                </div>
-              )
+              return <MemberMessage key={msg.id} message={msg} userDisplayName={displayName} />
             })}
 
             {typingMembers.map(id => <TypingIndicator key={id} memberId={id} />)}
@@ -500,18 +405,13 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
 
       {/* Input */}
       <div className="shrink-0 border-t border-donna-border px-3 py-2.5">
-        {pendingExpense && !pendingExpense.accountChoices && (
-          <p className="text-[10px] text-donna-subtle mb-1.5 px-1">
-            Type <strong>yes</strong> to confirm, or <strong>cancel</strong> to skip
-          </p>
-        )}
         <div className="flex items-end gap-2">
           <textarea
             ref={inputRef}
             value={input}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder={pendingExpense ? "yes / cancel / or continue…" : "Ask the council anything…"}
+            placeholder="Ask the council anything…"
             rows={1}
             className="flex-1 text-sm text-donna-text placeholder:text-donna-subtle bg-transparent outline-none resize-none leading-relaxed py-1"
             style={{ WebkitAppearance: 'none' }}
