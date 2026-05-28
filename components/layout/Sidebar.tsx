@@ -13,6 +13,7 @@ const NAV = [
   { href: '/inbox',      label: 'Inbox',      icon: Inbox },
   { href: '/tasks',      label: 'Tasks',      icon: CheckSquare },
   { href: '/calendar',   label: 'Calendar',   icon: Calendar },
+  { href: '/council',    label: 'Council',    icon: Bot },
   { href: '/memory',     label: 'Memory',     icon: BookMarked },
   { href: '/meetings',   label: 'Meetings',   icon: Users },
   { href: '/focus',      label: 'Focus',      icon: Target },
@@ -62,20 +63,8 @@ export default function Sidebar({ displayName }: { displayName: string }) {
         })}
       </nav>
 
-      {/* Settings + Council */}
-      <div className="px-3 py-2 border-t border-donna-border space-y-0.5">
-        <Link
-          href="/council"
-          className={cn(
-            'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all',
-            pathname === '/council'
-              ? 'bg-donna-violet/[0.08] text-donna-violet'
-              : 'text-donna-muted hover:bg-donna-elevated hover:text-donna-text'
-          )}
-        >
-          <Bot size={16} strokeWidth={1.8} />
-          Council
-        </Link>
+      {/* Settings */}
+      <div className="px-3 py-2 border-t border-donna-border">
         <Link
           href="/settings"
           className={cn(
