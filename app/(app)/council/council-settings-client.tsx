@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Camera, Check, Trash2, Zap, BarChart2, Brain } from 'lucide-react'
+import { Camera, Check, Trash2, Zap, BarChart2, Brain, type LucideIcon } from 'lucide-react'
 import {
   getAvatarUrl, setAvatarUrl, compressAvatar, AVATAR_UPDATED_EVENT,
 } from '@/lib/council-avatars'
@@ -155,7 +155,7 @@ interface MemberProfile {
   description: string
   expertise: ExpertiseTag[]
   activatesWhen: string
-  Icon: React.FC<{ size?: number; className?: string }>
+  Icon: LucideIcon
   alwaysOn?: boolean
 }
 
