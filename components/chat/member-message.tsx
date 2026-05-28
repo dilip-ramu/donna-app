@@ -1,6 +1,6 @@
 'use client'
 
-import MemberAvatar from './member-avatar'
+import MemberAvatar, { UserAvatar } from './member-avatar'
 import { getMember } from '@/services/council/member-registry'
 import type { CouncilMessage } from '@/types/council/message'
 import type { MemberId } from '@/types/council/member'
@@ -49,20 +49,22 @@ function renderContent(text: string) {
 
 interface MemberMessageProps {
   message: CouncilMessage
+  userDisplayName?: string
 }
 
-export default function MemberMessage({ message }: MemberMessageProps) {
+export default function MemberMessage({ message, userDisplayName }: MemberMessageProps) {
   const isUser = message.role === 'user'
 
   if (isUser) {
     return (
-      <div className="flex justify-end">
+      <div className="flex items-end justify-end gap-2">
         <div
           className="max-w-[78%] rounded-2xl rounded-tr-sm px-3.5 py-2.5 text-sm leading-relaxed"
           style={{ background: 'var(--c-text)', color: 'var(--c-surface)' }}
         >
           {message.content}
         </div>
+        <UserAvatar size="sm" displayName={userDisplayName} />
       </div>
     )
   }

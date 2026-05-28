@@ -46,6 +46,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const rightPanel = (
     <RightPanel
       userId={user.id}
+      displayName={displayName}
       memoryNotes={memoryNotes}
       inboxItems={inboxItems}
     />

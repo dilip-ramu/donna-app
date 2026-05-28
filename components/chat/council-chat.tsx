@@ -62,9 +62,10 @@ const SUGGESTIONS = [
 
 interface CouncilChatProps {
   userId: string
+  displayName?: string
 }
 
-export default function CouncilChat({ userId }: CouncilChatProps) {
+export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
   const [messages, setMessages]         = useState<CouncilMessage[]>([])
   const [input, setInput]               = useState('')
   const [isBusy, setIsBusy]             = useState(false)
@@ -309,7 +310,7 @@ export default function CouncilChat({ userId }: CouncilChatProps) {
         ) : (
           <>
             {messages.map(msg => (
-              <MemberMessage key={msg.id} message={msg} />
+              <MemberMessage key={msg.id} message={msg} userDisplayName={displayName} />
             ))}
 
             {/* Typing indicators for queued members */}

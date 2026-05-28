@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 import {
   Home, Inbox, CheckSquare, Calendar, BookMarked,
-  Users, Target, FolderOpen, Star, BookOpen, Settings, Sun,
+  Users, Target, FolderOpen, Star, BookOpen, Settings, Sun, Bot,
 } from 'lucide-react'
 
 const NAV = [
@@ -31,7 +31,7 @@ export default function Sidebar({ displayName }: { displayName: string }) {
       <div className="px-5 pt-6 pb-5">
         <span
           className="text-3xl leading-none tracking-wide"
-          style={{ fontFamily: 'var(--font-script), cursive', color: '#111827' }}
+          style={{ fontFamily: 'var(--font-script), cursive', color: 'var(--c-text)' }}
         >
           Donna
         </span>
@@ -62,8 +62,20 @@ export default function Sidebar({ displayName }: { displayName: string }) {
         })}
       </nav>
 
-      {/* Settings */}
-      <div className="px-3 py-2 border-t border-donna-border">
+      {/* Settings + Council */}
+      <div className="px-3 py-2 border-t border-donna-border space-y-0.5">
+        <Link
+          href="/council"
+          className={cn(
+            'flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all',
+            pathname === '/council'
+              ? 'bg-donna-violet/[0.08] text-donna-violet'
+              : 'text-donna-muted hover:bg-donna-elevated hover:text-donna-text'
+          )}
+        >
+          <Bot size={16} strokeWidth={1.8} />
+          Council
+        </Link>
         <Link
           href="/settings"
           className={cn(

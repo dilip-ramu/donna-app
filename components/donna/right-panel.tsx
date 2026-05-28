@@ -30,6 +30,7 @@ interface ChatMessage {
 
 interface RightPanelProps {
   userId: string
+  displayName?: string
   memoryNotes: InboxItem[]
   inboxItems: InboxItem[]
 }
@@ -810,7 +811,7 @@ function InboxTab({ items: initialItems }: { items: InboxItem[] }) {
 
 // ─── Right Panel ──────────────────────────────────────────────────────────────
 
-export default function RightPanel({ userId, memoryNotes, inboxItems }: RightPanelProps) {
+export default function RightPanel({ userId, displayName, memoryNotes, inboxItems }: RightPanelProps) {
   const [tab, setTab] = useState<Tab>('chat')
 
   const TABS: { id: Tab; icon: typeof MessageSquare; label: string }[] = [
@@ -857,7 +858,7 @@ export default function RightPanel({ userId, memoryNotes, inboxItems }: RightPan
 
       {/* Tab content */}
       <div className="flex flex-col flex-1 min-h-0 mt-2">
-        {tab === 'chat'   && <CouncilChat userId={userId} />}
+        {tab === 'chat'   && <CouncilChat userId={userId} displayName={displayName} />}
         {tab === 'memory' && <MemoryTab notes={memoryNotes} />}
         {tab === 'inbox'  && <InboxTab items={inboxItems} />}
       </div>
