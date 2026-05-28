@@ -176,6 +176,7 @@ function ChatTab({ userId }: { userId: string }) {
   const [activeMode, setActiveMode]         = useState<ChatMode | null>(null)
   const [isBusy, setIsBusy]                 = useState(false)
   const [pendingFinanceText, setPendingFinanceText] = useState<string | null>(null)
+  const [pendingAccounts, setPendingAccounts] = useState<{ id: string; name: string; type: string }[] | null>(null)
 
   const textareaRef    = useRef<HTMLTextAreaElement>(null)
   const scrollRef      = useRef<HTMLDivElement>(null)
@@ -289,7 +290,12 @@ function ChatTab({ userId }: { userId: string }) {
 
       // Account chooser — show chips when multiple accounts match
       const accounts = result.status === 'choose_account' ? result.accounts : undefined
-      if (result.status !== 'choose_account') setPendingFinanceText(null)
+      if (result.status !== 'choose_account') {
+        setPendingFinanceText(null)
+        setPendingAccounts(null)
+      } else if (accounts) {
+        setPendingAccounts(accounts)
+      }
 
       setMessages(prev => prev.map(m =>
         m.id === respId ? { ...m, content: reply, accounts } : m
@@ -374,6 +380,27 @@ function ChatTab({ userId }: { userId: string }) {
     // Reset textarea height
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
 
+    // If we're waiting for an account answer, treat typed text as account selection
+    if (pendingFinanceText && pendingAccounts) {
+      const q = content.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim()
+      // Try to fuzzy-match the typed reply against the pending accounts
+      const match =
+        pendingAccounts.find(a => a.name.toLowerCase().replace(/[^a-z0-9\s]/g, '') === q) ||
+        pendingAccounts.find(a => a.name.toLowerCase().replace(/[^a-z0-9\s]/g, '').includes(q) || q.includes(a.name.toLowerCase().replace(/[^a-z0-9\s]/g, '')))
+
+      const originalText = pendingFinanceText
+      setPendingFinanceText(null)
+      setPendingAccounts(null)
+
+      if (match) {
+        await handleFinanceMode(originalText, match.id)
+      } else {
+        // Couldn't match — re-try with the new account hint as part of the original sentence
+        await handleFinanceMode(`${originalText} from ${content}`)
+      }
+      return
+    }
+
     if (activeMode === 'tasks' || activeMode === 'memory' || activeMode === 'calendar') {
       await handleActionMode(content, activeMode)
     } else if (activeMode === 'finance') {
@@ -382,7 +409,7 @@ function ChatTab({ userId }: { userId: string }) {
       await handleChat(content, activeMode)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [input, userId, isBusy, activeMode, messages])
+  }, [input, userId, isBusy, activeMode, messages, pendingFinanceText, pendingAccounts])
 
   const activeCfg = MODES.find(m => m.id === activeMode)
 
@@ -474,7 +501,8 @@ function ChatTab({ userId }: { userId: string }) {
                         onClick={() => {
                           const txt = pendingFinanceText
                           setPendingFinanceText(null)
-                          handleFinanceMode(txt, acc.id)
+                          setPendingAccounts(null)
+                          if (txt) handleFinanceMode(txt, acc.id)
                         }}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium
                                    border border-[#D8B4FE] text-[#7C3AED] bg-[#FAFAFF]
