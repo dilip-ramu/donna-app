@@ -100,6 +100,15 @@ const AEGA: CouncilMember = {
     'outstanding', 'due',
     'salary', 'payroll',
     'tax', 'gst', 'vat',
+    'net worth', 'networth', 'wealth',
+    'assets', 'liabilities',
+    'savings', 'investment', 'investments',
+    'portfolio', 'returns',
+    'loan', 'loans', 'debt', 'debts',
+    'credit', 'debit',
+    'afford', 'afford to',
+    'how much do i have', 'how much have i spent',
+    'how much is', 'how much are',
   ],
 }
 
