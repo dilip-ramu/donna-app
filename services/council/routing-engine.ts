@@ -45,6 +45,11 @@ function contextBoosts(message: string, memberId: MemberId): number {
     if (/[₹$€£]\s*[\d,]+|[\d,]+\s*[₹$€£]/i.test(lower)) boost += 0.3
     if (/\d+.*rupee|rupee.*\d/i.test(lower)) boost += 0.2
     if (/\bowed?\b.*\d|\d.*\bowed?\b/i.test(lower)) boost += 0.15
+    // "how much" questions about money/finances are clearly Aega territory
+    if (/how much (money|do i have|have i|did i spend|have i spent|is left|do i owe)/i.test(lower)) boost += 0.35
+    if (/what('s| is) my (net worth|balance|total|budget|spend|spending)/i.test(lower)) boost += 0.35
+    if (/how (much|are|is).*(money|cash|spend|spent|paid|balance|account)/i.test(lower)) boost += 0.25
+    if (/am i (over|under|on) budget|can i afford/i.test(lower)) boost += 0.3
   }
 
   return Math.min(0.4, boost)

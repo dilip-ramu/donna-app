@@ -73,7 +73,7 @@ const AEGA: CouncilMember = {
   accentBg: '#ECFDF5',
   accentBgDark: '#022C22',
   initial: 'A',
-  participationThreshold: 0.35,
+  participationThreshold: 0.2,
   alwaysParticipates: false,
   responseOrder: 2,
   domainKeywords: [
