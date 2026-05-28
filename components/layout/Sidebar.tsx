@@ -25,7 +25,7 @@ export default function Sidebar({ displayName }: { displayName: string }) {
   const pathname = usePathname()
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-donna-border select-none">
+    <div className="flex flex-col h-full bg-donna-surface border-r border-donna-border select-none">
 
       {/* Logo */}
       <div className="px-5 pt-6 pb-5">

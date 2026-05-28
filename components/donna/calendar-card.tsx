@@ -93,8 +93,8 @@ export default function CalendarCard({ dateLabel, meetings }: CalendarCardProps)
       <CardBody>
         <div className="flex items-start justify-between mb-3 shrink-0">
           <div>
-            <h2 className="text-[0.9375rem] font-semibold text-[#111827] leading-none">Today's schedule</h2>
-            <p className="text-[11px] text-[#9CA3AF] mt-0.5">{dateLabel}</p>
+            <h2 className="text-[0.9375rem] font-semibold text-donna-text leading-none">Today's schedule</h2>
+            <p className="text-[11px] text-donna-subtle mt-0.5">{dateLabel}</p>
           </div>
           <Link href="/calendar" className="text-xs font-medium text-[#7C3AED] hover:underline shrink-0">
             Full calendar →
@@ -105,7 +105,7 @@ export default function CalendarCard({ dateLabel, meetings }: CalendarCardProps)
         {nextMeeting && minsUntilNext !== null && minsUntilNext <= 120 && (
           <div
             className="flex items-center gap-2 rounded-xl px-3 py-2 mb-3 shrink-0"
-            style={{ background: '#F5F3FF' }}
+            style={{ background: 'var(--c-violet-bg)' }}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-[#7C3AED] animate-pulse shrink-0" />
             <p className="text-xs text-[#7C3AED] font-medium flex-1 min-w-0 truncate">
@@ -122,7 +122,7 @@ export default function CalendarCard({ dateLabel, meetings }: CalendarCardProps)
             <div className="py-8 text-center">
               <div
                 className="w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                style={{ background: '#F5F3FF' }}
+                style={{ background: 'var(--c-violet-bg)' }}
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                   <rect x="2" y="3" width="14" height="13" rx="2.5" stroke="#7C3AED" strokeWidth="1.5" />
@@ -130,7 +130,7 @@ export default function CalendarCard({ dateLabel, meetings }: CalendarCardProps)
                   <path d="M2 7h14" stroke="#7C3AED" strokeWidth="1.5" />
                 </svg>
               </div>
-              <p className="text-sm text-[#6B7280]">No meetings today</p>
+              <p className="text-sm text-donna-muted">No meetings today</p>
               <Link href="/calendar" className="text-xs text-[#7C3AED] hover:underline mt-1 inline-block">
                 Add to calendar →
               </Link>
@@ -146,10 +146,10 @@ export default function CalendarCard({ dateLabel, meetings }: CalendarCardProps)
                   >
                     {/* Time column */}
                     <div className="w-14 shrink-0 flex flex-col items-end pt-1.5">
-                      <span className="text-[10px] font-medium text-[#9CA3AF] tabular-nums leading-none">
+                      <span className="text-[10px] font-medium text-donna-subtle tabular-nums leading-none">
                         {event.startLabel.split(' ')[0]}
                       </span>
-                      <span className="text-[9px] text-[#C4C4CC] mt-0.5">
+                      <span className="text-[9px] text-donna-subtle mt-0.5">
                         {event.startLabel.split(' ')[1]}
                       </span>
                     </div>
@@ -184,16 +184,16 @@ export default function CalendarCard({ dateLabel, meetings }: CalendarCardProps)
                         </span>
                         {event.location && (
                           <>
-                            <span className="text-[#E0E0E0]">·</span>
-                            <span className="text-[10px] text-[#9CA3AF] truncate max-w-[90px]">
+                            <span className="text-donna-subtle">·</span>
+                            <span className="text-[10px] text-donna-subtle truncate max-w-[90px]">
                               {event.location}
                             </span>
                           </>
                         )}
                         {event.attendeeCount > 0 && (
                           <>
-                            <span className="text-[#E0E0E0]">·</span>
-                            <span className="flex items-center gap-0.5 text-[10px] text-[#9CA3AF]">
+                            <span className="text-donna-subtle">·</span>
+                            <span className="flex items-center gap-0.5 text-[10px] text-donna-subtle">
                               <Users size={9} strokeWidth={2} />
                               {event.attendeeCount}
                             </span>

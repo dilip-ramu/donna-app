@@ -71,7 +71,7 @@ export default function DonnaInput({ userId }: DonnaInputProps) {
   }
 
   return (
-    <div className="shrink-0 border-t border-[#E8E8EE] bg-white">
+    <div className="shrink-0 border-t border-donna-border bg-donna-surface">
       {/* Response bubble */}
       {showResponse && lastResponse && (
         <div
@@ -84,10 +84,10 @@ export default function DonnaInput({ userId }: DonnaInputProps) {
           >
             <Sparkles size={10} className="text-white" />
           </div>
-          <p className="text-sm text-[#111827] leading-relaxed flex-1">{lastResponse}</p>
+          <p className="text-sm text-donna-text leading-relaxed flex-1">{lastResponse}</p>
           <button
             onClick={() => setShowResponse(false)}
-            className="text-[#9CA3AF] hover:text-[#6B7280] shrink-0 transition-colors"
+            className="text-donna-subtle hover:text-donna-muted shrink-0 transition-colors"
             aria-label="Dismiss response"
           >
             <X size={14} />
@@ -117,16 +117,16 @@ export default function DonnaInput({ userId }: DonnaInputProps) {
           onKeyDown={handleKeyDown}
           placeholder={isStreaming ? 'Donna is thinking…' : 'Ask Donna anything…'}
           disabled={isStreaming}
-          className="flex-1 text-sm text-[#111827] placeholder:text-[#9CA3AF]
+          className="flex-1 text-sm text-donna-text placeholder:text-donna-subtle
                      bg-transparent outline-none disabled:opacity-60 min-w-0"
         />
 
         {/* Action buttons */}
         <div className="flex items-center gap-2 shrink-0">
           <button
-            className="hidden sm:flex items-center gap-1.5 text-xs text-[#6B7280] font-medium
-                       border border-[#E8E8EE] rounded-lg px-2.5 py-1.5
-                       hover:bg-[#F0F0F5] transition-colors"
+            className="hidden sm:flex items-center gap-1.5 text-xs text-donna-muted font-medium
+                       border border-donna-border rounded-lg px-2.5 py-1.5
+                       hover:bg-donna-elevated transition-colors"
             aria-label="Quick add"
           >
             <Plus size={12} />
@@ -134,8 +134,8 @@ export default function DonnaInput({ userId }: DonnaInputProps) {
           </button>
 
           <button
-            className="w-8 h-8 rounded-full border border-[#E8E8EE] flex items-center justify-center
-                       text-[#6B7280] hover:bg-[#F0F0F5] transition-colors"
+            className="w-8 h-8 rounded-full border border-donna-border flex items-center justify-center
+                       text-donna-muted hover:bg-donna-elevated transition-colors"
             aria-label="Voice input"
           >
             <Mic size={14} />
@@ -148,7 +148,7 @@ export default function DonnaInput({ userId }: DonnaInputProps) {
               'w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-95',
               value.trim() && !isStreaming
                 ? 'text-white shadow-[0_2px_8px_rgba(124,58,237,0.4)]'
-                : 'bg-[#F0F0F5] text-[#9CA3AF] cursor-not-allowed'
+                : 'bg-donna-elevated text-donna-subtle cursor-not-allowed'
             )}
             style={value.trim() && !isStreaming ? {
               background: 'linear-gradient(135deg, #7C3AED 0%, #9333EA 100%)',
@@ -161,7 +161,7 @@ export default function DonnaInput({ userId }: DonnaInputProps) {
       </div>
 
       {/* Hint text */}
-      <p className="text-center text-[10px] text-[#9CA3AF] pb-2 -mt-1">
+      <p className="text-center text-[10px] text-donna-subtle pb-2 -mt-1">
         {isStreaming ? 'Donna is thinking…' : 'Donna is listening. Type naturally.'}
       </p>
     </div>

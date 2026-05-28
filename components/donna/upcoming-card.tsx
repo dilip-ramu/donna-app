@@ -67,23 +67,23 @@ export default function UpcomingCard({ tasks, meetings }: UpcomingCardProps) {
         <CardList>
           {all.length === 0 ? (
             <div className="py-6 text-center">
-              <p className="text-sm text-[#6B7280]">Nothing coming up.</p>
-              <p className="text-[11px] text-[#9CA3AF] mt-1">Add a task with a due date to see it here.</p>
+              <p className="text-sm text-donna-muted">Nothing coming up.</p>
+              <p className="text-[11px] text-donna-subtle mt-1">Add a task with a due date to see it here.</p>
             </div>
           ) : (
             <ul>
               {all.map(item => (
                 <li
                   key={`${item.type}-${item.id}`}
-                  className="flex items-start gap-3 py-2.5 border-b border-[#F3F3F7] last:border-0"
+                  className="flex items-start gap-3 py-2.5 border-b border-donna-border last:border-0"
                 >
-                  <div className="w-7 h-7 rounded-lg bg-[#F0F0F5] flex items-center justify-center shrink-0 mt-0.5">
-                    <Calendar size={13} className="text-[#6B7280]" strokeWidth={1.8} />
+                  <div className="w-7 h-7 rounded-lg bg-donna-elevated flex items-center justify-center shrink-0 mt-0.5">
+                    <Calendar size={13} className="text-donna-muted" strokeWidth={1.8} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#111827] leading-snug truncate">{item.title}</p>
+                    <p className="text-sm font-medium text-donna-text leading-snug truncate">{item.title}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <p className="text-[11px] text-[#9CA3AF]">{item.dateLabel}</p>
+                      <p className="text-[11px] text-donna-subtle">{item.dateLabel}</p>
                       <span
                         className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full"
                         style={{

@@ -77,14 +77,14 @@ function DayView({ dateStr, dayData, todayStr }: { dateStr: string; dayData: Day
     <div className="px-5 py-4 space-y-4">
       {allEmpty ? (
         <div className="py-10 text-center">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: '#F5F3FF' }}>
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: 'var(--c-violet-bg)' }}>
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <rect x="2" y="3" width="14" height="13" rx="2.5" stroke="#7C3AED" strokeWidth="1.5"/>
               <path d="M6 2v2M12 2v2" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round"/>
               <path d="M2 7h14" stroke="#7C3AED" strokeWidth="1.5"/>
             </svg>
           </div>
-          <p className="text-sm text-[#9CA3AF]">Nothing scheduled</p>
+          <p className="text-sm text-donna-subtle">Nothing scheduled</p>
           <Link href="/calendar" className="text-xs text-[#7C3AED] hover:underline mt-1 inline-block">Add something →</Link>
         </div>
       ) : (
@@ -92,16 +92,16 @@ function DayView({ dateStr, dayData, todayStr }: { dateStr: string; dayData: Day
           {/* Meetings */}
           {sortedMeetings.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wide mb-2">Meetings</p>
+              <p className="text-[10px] font-semibold text-donna-subtle uppercase tracking-wide mb-2">Meetings</p>
               <div className="space-y-2">
                 {sortedMeetings.map((m, i) => (
                   <div key={m.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
                     style={{ background: MEETING_COLORS[i % MEETING_COLORS.length] + '12', borderLeft: `3px solid ${MEETING_COLORS[i % MEETING_COLORS.length]}` }}>
                     <Clock size={12} style={{ color: MEETING_COLORS[i % MEETING_COLORS.length] }} className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#111827] truncate">{m.title}</p>
+                      <p className="text-sm font-medium text-donna-text truncate">{m.title}</p>
                       {m.start_time && (
-                        <p className="text-[10px] text-[#9CA3AF]">{fmtTime(m.start_time)}{m.end_time ? ` – ${fmtTime(m.end_time)}` : ''}</p>
+                        <p className="text-[10px] text-donna-subtle">{fmtTime(m.start_time)}{m.end_time ? ` – ${fmtTime(m.end_time)}` : ''}</p>
                       )}
                     </div>
                   </div>
@@ -113,13 +113,13 @@ function DayView({ dateStr, dayData, todayStr }: { dateStr: string; dayData: Day
           {/* Tasks */}
           {tasks.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold text-[#9CA3AF] uppercase tracking-wide mb-2">Tasks</p>
+              <p className="text-[10px] font-semibold text-donna-subtle uppercase tracking-wide mb-2">Tasks</p>
               <div className="space-y-1.5">
                 {tasks.map(t => (
-                  <div key={t.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#FAFAFA]"
+                  <div key={t.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-donna-elevated"
                     style={{ borderLeft: `2.5px solid ${PRIORITY_COLOR[t.priority] ?? '#E5E7EB'}` }}>
-                    <CheckSquare size={12} className="shrink-0 text-[#D1D5DB]" />
-                    <p className="flex-1 text-sm text-[#111827] truncate">{t.title}</p>
+                    <CheckSquare size={12} className="shrink-0 text-donna-subtle" />
+                    <p className="flex-1 text-sm text-donna-text truncate">{t.title}</p>
                     {t.due_date && t.due_date < todayStr && (
                       <span className="text-[9px] font-medium text-[#EF4444] shrink-0">overdue</span>
                     )}
@@ -163,15 +163,15 @@ function WeekView({
               className={`flex flex-col rounded-xl p-2 text-left transition-all min-h-[120px]
                 ${isToday
                   ? 'bg-[#7C3AED] text-white'
-                  : 'bg-[#FAFAFA] hover:bg-[#F0EDF8] text-[#111827]'
+                  : 'bg-donna-elevated hover:bg-donna-violet-light text-donna-text'
                 }`}
             >
               {/* Day header */}
               <div className="shrink-0 mb-1.5">
-                <p className={`text-[9px] font-medium uppercase tracking-wide ${isToday ? 'text-[rgba(255,255,255,0.7)]' : 'text-[#9CA3AF]'}`}>
+                <p className={`text-[9px] font-medium uppercase tracking-wide ${isToday ? 'text-[rgba(255,255,255,0.7)]' : 'text-donna-subtle'}`}>
                   {DAY_LABELS[day.getDay()]}
                 </p>
-                <p className={`text-sm font-bold leading-none mt-0.5 ${isToday ? 'text-white' : 'text-[#111827]'}`}>
+                <p className={`text-sm font-bold leading-none mt-0.5 ${isToday ? 'text-white' : 'text-donna-text'}`}>
                   {day.getDate()}
                 </p>
               </div>
@@ -203,7 +203,7 @@ function WeekView({
                   </div>
                 ))}
                 {totalItems > 3 && (
-                  <p className={`text-[9px] mt-auto ${isToday ? 'text-[rgba(255,255,255,0.6)]' : 'text-[#9CA3AF]'}`}>
+                  <p className={`text-[9px] mt-auto ${isToday ? 'text-[rgba(255,255,255,0.6)]' : 'text-donna-subtle'}`}>
                     +{totalItems - 3} more
                   </p>
                 )}
@@ -251,7 +251,7 @@ function MonthView({
       {/* Day-of-week headers */}
       <div className="grid grid-cols-7 mb-1">
         {DAY_LABELS.map(d => (
-          <div key={d} className="text-center text-[9px] font-semibold text-[#9CA3AF] uppercase tracking-wide py-1">
+          <div key={d} className="text-center text-[9px] font-semibold text-donna-subtle uppercase tracking-wide py-1">
             {d}
           </div>
         ))}
@@ -276,11 +276,11 @@ function MonthView({
                   key={ds}
                   onClick={() => onDayClick(day)}
                   className={`h-14 rounded-xl flex flex-col items-center pt-1.5 transition-all relative
-                    ${isToday ? 'bg-[#7C3AED]' : isCurrentMonth ? 'bg-[#FAFAFA] hover:bg-[#F0EDF8]' : 'bg-transparent hover:bg-[#F9FAFB]'}
+                    ${isToday ? 'bg-[#7C3AED]' : isCurrentMonth ? 'bg-donna-elevated hover:bg-donna-violet-light' : 'bg-transparent hover:bg-donna-elevated'}
                   `}
                 >
                   <span className={`text-[11px] font-semibold leading-none
-                    ${isToday ? 'text-white' : isCurrentMonth ? 'text-[#111827]' : 'text-[#D1D5DB]'}
+                    ${isToday ? 'text-white' : isCurrentMonth ? 'text-donna-text' : 'text-donna-subtle'}
                   `}>
                     {day.getDate()}
                   </span>
@@ -289,13 +289,13 @@ function MonthView({
                   {totalItems > 0 && (
                     <div className="flex items-center gap-0.5 mt-1.5">
                       {hasMeeting && (
-                        <div className={`w-1.5 h-1.5 rounded-full ${isToday ? 'bg-white' : 'bg-[#7C3AED]'}`} />
+                        <div className={`w-1.5 h-1.5 rounded-full ${isToday ? 'bg-donna-surface' : 'bg-[#7C3AED]'}`} />
                       )}
                       {hasTask && (
                         <div className={`w-1.5 h-1.5 rounded-full ${isToday ? 'bg-[rgba(255,255,255,0.6)]' : 'bg-[#F59E0B]'}`} />
                       )}
                       {totalItems > 2 && (
-                        <div className={`w-1.5 h-1.5 rounded-full ${isToday ? 'bg-[rgba(255,255,255,0.4)]' : 'bg-[#E5E7EB]'}`} />
+                        <div className={`w-1.5 h-1.5 rounded-full ${isToday ? 'bg-[rgba(255,255,255,0.4)]' : 'bg-donna-border'}`} />
                       )}
                     </div>
                   )}
@@ -307,14 +307,14 @@ function MonthView({
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-3 mt-3 pt-2 border-t border-[#F0F0F5]">
+      <div className="flex items-center gap-3 mt-3 pt-2 border-t border-donna-border">
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5 rounded-full bg-[#7C3AED]" />
-          <span className="text-[9px] text-[#9CA3AF]">Meeting</span>
+          <span className="text-[9px] text-donna-subtle">Meeting</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
-          <span className="text-[9px] text-[#9CA3AF]">Task</span>
+          <span className="text-[9px] text-donna-subtle">Task</span>
         </div>
       </div>
     </div>
@@ -371,7 +371,7 @@ export default function FullCalendarCard({ tasks, meetings }: FullCalendarCardPr
     <DashboardCard>
       <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
         {/* ── Header ── */}
-        <div className="flex flex-col px-4 pt-3.5 pb-2.5 shrink-0 border-b border-[#F0F0F5] gap-2">
+        <div className="flex flex-col px-4 pt-3.5 pb-2.5 shrink-0 border-b border-donna-border gap-2">
 
           {/* Row 1: view toggle (left) + Open link (right) */}
           <div className="flex items-center justify-between">
@@ -383,7 +383,7 @@ export default function FullCalendarCard({ tasks, meetings }: FullCalendarCardPr
                   className={`text-[11px] font-medium rounded-lg transition-colors ${
                     view === v
                       ? 'bg-[#7C3AED] text-white'
-                      : 'text-[#6B7280] hover:bg-[#F4F4F8]'
+                      : 'text-donna-muted hover:bg-donna-elevated'
                   }`}
                   style={{ minWidth: 48, minHeight: 34, padding: '0 10px' }}
                 >
@@ -405,22 +405,22 @@ export default function FullCalendarCard({ tasks, meetings }: FullCalendarCardPr
           <div className="flex items-center gap-1">
             <button
               onClick={() => navigate(-1)}
-              className="p-1.5 rounded-lg hover:bg-[#F4F4F8] text-[#6B7280] transition-colors shrink-0"
+              className="p-1.5 rounded-lg hover:bg-donna-elevated text-donna-muted transition-colors shrink-0"
             >
               <ChevronLeft size={14} />
             </button>
-            <span className="flex-1 text-sm font-semibold text-[#111827] text-center truncate">
+            <span className="flex-1 text-sm font-semibold text-donna-text text-center truncate">
               {titleLabel}
             </span>
             <button
               onClick={() => navigate(1)}
-              className="p-1.5 rounded-lg hover:bg-[#F4F4F8] text-[#6B7280] transition-colors shrink-0"
+              className="p-1.5 rounded-lg hover:bg-donna-elevated text-donna-muted transition-colors shrink-0"
             >
               <ChevronRight size={14} />
             </button>
             <button
               onClick={() => setBaseDate(new Date())}
-              className="ml-1 text-[10px] font-medium px-2 py-1 rounded-md border border-[#E5E7EB] text-[#6B7280]
+              className="ml-1 text-[10px] font-medium px-2 py-1 rounded-md border border-donna-border text-donna-muted
                          hover:border-[#7C3AED] hover:text-[#7C3AED] transition-colors shrink-0"
               style={{ minHeight: 28 }}
             >

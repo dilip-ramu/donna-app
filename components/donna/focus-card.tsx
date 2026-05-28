@@ -21,7 +21,7 @@ export default function FocusCard() {
         {/* Quote block */}
         <div
           className="rounded-xl px-4 py-4 mb-4 shrink-0"
-          style={{ background: '#EDE9FE' }}
+          style={{ background: 'var(--c-violet-bg)' }}
         >
           <span
             className="leading-none font-serif select-none block"
@@ -42,12 +42,12 @@ export default function FocusCard() {
           <ul className="space-y-3">
             {FOCUS_TIPS.map(({ icon: Icon, title, sub }) => (
               <li key={title} className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg bg-[#F0F0F5] flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon size={13} className="text-[#6B7280]" strokeWidth={1.8} />
+                <div className="w-7 h-7 rounded-lg bg-donna-elevated flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon size={13} className="text-donna-muted" strokeWidth={1.8} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#111827] leading-none">{title}</p>
-                  <p className="text-[11px] text-[#9CA3AF] mt-0.5">{sub}</p>
+                  <p className="text-sm font-medium text-donna-text leading-none">{title}</p>
+                  <p className="text-[11px] text-donna-subtle mt-0.5">{sub}</p>
                 </div>
               </li>
             ))}

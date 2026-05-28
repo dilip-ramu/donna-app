@@ -69,7 +69,7 @@ export default function BottomChatBar({ userId }: BottomChatBarProps) {
   }
 
   return (
-    <div className="shrink-0 border-t border-donna-border bg-white">
+    <div className="shrink-0 border-t border-donna-border bg-donna-surface">
       {/* Response bubble */}
       {showResponse && lastResponse && (
         <div className="px-6 pt-3 pb-0">

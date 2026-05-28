@@ -100,8 +100,8 @@ export default function TodayCard({ tasks, completedToday, dateLabel }: TodayCar
         {/* ── Header ── */}
         <div className="flex items-start justify-between mb-3 shrink-0">
           <div>
-            <h2 className="text-[0.9375rem] font-semibold text-[#111827] leading-none">Today's work</h2>
-            <p className="text-[11px] text-[#9CA3AF] mt-0.5">{dateLabel}</p>
+            <h2 className="text-[0.9375rem] font-semibold text-donna-text leading-none">Today's work</h2>
+            <p className="text-[11px] text-donna-subtle mt-0.5">{dateLabel}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {/* Completion ring */}
@@ -116,17 +116,17 @@ export default function TodayCard({ tasks, completedToday, dateLabel }: TodayCar
                   className="transition-all duration-500"
                 />
               </svg>
-              <span className="text-[11px] text-[#9CA3AF] font-medium tabular-nums">
+              <span className="text-[11px] text-donna-subtle font-medium tabular-nums">
                 {completedCount}/{totalCount}
               </span>
             </div>
             <Link
               href="/tasks"
-              className="w-7 h-7 rounded-lg bg-[#F0F0F5] flex items-center justify-center
-                         hover:bg-[#E8E8EE] transition-colors"
+              className="w-7 h-7 rounded-lg bg-donna-elevated flex items-center justify-center
+                         hover:bg-donna-elevated transition-colors"
               title="All tasks"
             >
-              <Plus size={14} className="text-[#6B7280]" />
+              <Plus size={14} className="text-donna-muted" />
             </Link>
           </div>
         </div>
@@ -139,8 +139,8 @@ export default function TodayCard({ tasks, completedToday, dateLabel }: TodayCar
                   <path d="M4 10l4 4 8-8" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-[#111827]">All clear</p>
-              <p className="text-[11px] text-[#9CA3AF] mt-0.5">Nothing left for today.</p>
+              <p className="text-sm font-medium text-donna-text">All clear</p>
+              <p className="text-[11px] text-donna-subtle mt-0.5">Nothing left for today.</p>
             </div>
           ) : (
             <div className="space-y-5">
@@ -153,7 +153,7 @@ export default function TodayCard({ tasks, completedToday, dateLabel }: TodayCar
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7C3AED]">
                       In Progress
                     </span>
-                    <span className="text-[10px] text-[#C4C4CC]">· {inProgress.length}</span>
+                    <span className="text-[10px] text-donna-subtle">· {inProgress.length}</span>
                   </div>
 
                   <div className="space-y-1.5">
@@ -194,7 +194,7 @@ export default function TodayCard({ tasks, completedToday, dateLabel }: TodayCar
                           {/* Title + due */}
                           <div className="flex-1 min-w-0">
                             <p
-                              className="text-sm font-medium text-[#111827] leading-snug truncate"
+                              className="text-sm font-medium text-donna-text leading-snug truncate"
                               style={{ textDecoration: isDone ? 'line-through' : 'none', opacity: isDone ? 0.4 : 1 }}
                             >
                               {task.title}
@@ -213,8 +213,8 @@ export default function TodayCard({ tasks, completedToday, dateLabel }: TodayCar
                             title="Pause — move back to pending"
                             className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0
                                        flex items-center gap-1 text-[10px] font-medium
-                                       text-[#9CA3AF] hover:text-[#6B7280]
-                                       px-2 py-0.5 rounded-lg hover:bg-[#F0F0F5]"
+                                       text-donna-subtle hover:text-donna-muted
+                                       px-2 py-0.5 rounded-lg hover:bg-donna-elevated"
                           >
                             <Pause size={9} strokeWidth={2} />
                             Pause
@@ -232,11 +232,11 @@ export default function TodayCard({ tasks, completedToday, dateLabel }: TodayCar
                   {/* Section label only visible when there's also an In Progress section */}
                   {inProgress.length > 0 && (
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="w-2 h-2 rounded-full bg-[#D1D5DB] shrink-0" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">
+                      <span className="w-2 h-2 rounded-full bg-donna-subtle shrink-0" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-donna-subtle">
                         Pending
                       </span>
-                      <span className="text-[10px] text-[#C4C4CC]">· {pending.length}</span>
+                      <span className="text-[10px] text-donna-subtle">· {pending.length}</span>
                     </div>
                   )}
 
@@ -249,10 +249,10 @@ export default function TodayCard({ tasks, completedToday, dateLabel }: TodayCar
                           <div className="flex items-center gap-2 mb-1.5">
                             <span className="w-1.5 h-1.5 rounded-full shrink-0"
                               style={{ background: cfg.dot }} />
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]">
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-donna-subtle">
                               {cfg.label}
                             </span>
-                            <span className="text-[10px] text-[#C4C4CC]">· {ptasks.length}</span>
+                            <span className="text-[10px] text-donna-subtle">· {ptasks.length}</span>
                           </div>
 
                           <div className="space-y-1">
@@ -265,7 +265,7 @@ export default function TodayCard({ tasks, completedToday, dateLabel }: TodayCar
                                 <div
                                   key={task.id}
                                   className="group flex items-center gap-3 py-2 px-3 rounded-xl
-                                             hover:bg-[#FAFAFA] transition-colors cursor-default"
+                                             hover:bg-donna-elevated transition-colors cursor-default"
                                   style={{ borderLeft: `2.5px solid ${cfg.border}` }}
                                 >
                                   {/* Checkbox */}
@@ -291,7 +291,7 @@ export default function TodayCard({ tasks, completedToday, dateLabel }: TodayCar
                                   {/* Content */}
                                   <div className="flex-1 min-w-0">
                                     <p
-                                      className="text-sm text-[#111827] leading-snug truncate"
+                                      className="text-sm text-donna-text leading-snug truncate"
                                       style={{
                                         textDecoration: isDone ? 'line-through' : 'none',
                                         opacity: isDone ? 0.4 : 1,
@@ -315,7 +315,7 @@ export default function TodayCard({ tasks, completedToday, dateLabel }: TodayCar
                                     className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0
                                                flex items-center gap-1 text-[10px] font-medium
                                                text-[#7C3AED] hover:text-[#6D28D9]
-                                               px-2 py-0.5 rounded-lg hover:bg-[#F5F3FF]"
+                                               px-2 py-0.5 rounded-lg hover:bg-donna-violet-light"
                                   >
                                     <Play size={9} strokeWidth={2.5} />
                                     Start
@@ -333,7 +333,7 @@ export default function TodayCard({ tasks, completedToday, dateLabel }: TodayCar
 
               {/* Session completion note */}
               {done.size > 0 && (
-                <p className="text-[11px] text-[#9CA3AF] text-center py-1">
+                <p className="text-[11px] text-donna-subtle text-center py-1">
                   ✓ {done.size} marked done this session
                 </p>
               )}

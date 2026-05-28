@@ -69,7 +69,7 @@ export default function ThemeToggle({ variant = 'compact', className }: ThemeTog
           }}
         >
           <div
-            className="absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow-sm transition-all duration-200"
+            className="absolute top-0.5 w-4.5 h-4.5 rounded-full bg-donna-surface shadow-sm transition-all duration-200"
             style={{ width: 18, height: 18, top: 2, left: dark ? 20 : 2 }}
           />
         </div>

@@ -82,13 +82,13 @@ export default function IdeasCard({ ideas }: IdeasCardProps) {
               }}
               placeholder="What's the idea? ↵ to save"
               rows={2}
-              className="w-full resize-none bg-transparent text-sm text-[#111827]
-                         placeholder:text-[#9CA3AF] outline-none leading-snug"
+              className="w-full resize-none bg-transparent text-sm text-donna-text
+                         placeholder:text-donna-subtle outline-none leading-snug"
             />
             <div className="flex justify-end gap-2 mt-2">
               <button
                 onClick={() => { setIsAdding(false); setValue('') }}
-                className="text-xs text-[#9CA3AF] hover:text-[#6B7280] px-2 py-1"
+                className="text-xs text-donna-subtle hover:text-donna-muted px-2 py-1"
               >
                 Cancel
               </button>
@@ -114,11 +114,11 @@ export default function IdeasCard({ ideas }: IdeasCardProps) {
             <div className="py-8 text-center">
               <div
                 className="w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                style={{ background: '#FFFBEB' }}
+                style={{ background: 'var(--c-elevated)' }}
               >
                 <Lightbulb size={18} style={{ color: '#F59E0B' }} />
               </div>
-              <p className="text-sm text-[#9CA3AF]">No ideas yet.</p>
+              <p className="text-sm text-donna-subtle">No ideas yet.</p>
               <button
                 onClick={openAdd}
                 className="text-xs text-[#7C3AED] hover:underline mt-1"
@@ -136,8 +136,8 @@ export default function IdeasCard({ ideas }: IdeasCardProps) {
                   <li
                     key={idea.id}
                     className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl transition-colors
-                               hover:bg-[#FFFBEB] cursor-default"
-                    style={{ background: '#FAFAFA' }}
+                               hover:bg-donna-amber-light cursor-default"
+                    style={{ background: 'var(--c-elevated)' }}
                   >
                     <Lightbulb
                       size={13}
@@ -145,11 +145,11 @@ export default function IdeasCard({ ideas }: IdeasCardProps) {
                       style={{ color: '#F59E0B' }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#111827] leading-snug truncate">
+                      <p className="text-sm font-medium text-donna-text leading-snug truncate">
                         {idea.title}
                       </p>
                       {idea.description && (
-                        <p className="text-[11px] text-[#9CA3AF] mt-0.5 line-clamp-1">
+                        <p className="text-[11px] text-donna-subtle mt-0.5 line-clamp-1">
                           {idea.description}
                         </p>
                       )}
@@ -169,7 +169,7 @@ export default function IdeasCard({ ideas }: IdeasCardProps) {
                           </span>
                         )}
                         {idea.idea_type && idea.idea_type !== 'general' && (
-                          <span className="text-[10px] text-[#C4C4CC] capitalize">
+                          <span className="text-[10px] text-donna-subtle capitalize">
                             {idea.idea_type}
                           </span>
                         )}

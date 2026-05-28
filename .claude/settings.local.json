@@ -24,7 +24,13 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k: d.get\\(k,''\\) for k in ['version','peerDependencies','dependencies']}, indent=2\\)\\)\")",
       "Bash(npm info *)",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d['version']\\)\")",
-      "Bash(python3 -c \"import json,sys; print\\(json.load\\(sys.stdin\\)['version']\\)\")"
+      "Bash(python3 -c \"import json,sys; print\\(json.load\\(sys.stdin\\)['version']\\)\")",
+      "Bash(bash deploy-vaultr.sh)",
+      "Bash(rm \"/Users/diliptr/Documents/Claude/Projects/Donna- The Secretary/donna-app/.git/index.lock\")",
+      "Bash(rm -f .git/HEAD.lock)",
+      "Bash(git commit *)",
+      "Bash(git reset *)",
+      "Bash(grep -v \"SERVICE_ROLE\\\\|SUPABASE\\\\|APP_URL\\\\|key.*=\\\\$\")"
     ]
   }
 }

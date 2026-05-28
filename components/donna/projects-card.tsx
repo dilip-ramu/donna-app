@@ -33,13 +33,13 @@ function ProgressBar({ done, total, color }: { done: number; total: number; colo
 
   return (
     <div className="flex items-center gap-2 mt-1.5">
-      <div className="flex-1 h-1.5 rounded-full bg-[#F0F0F5] overflow-hidden">
+      <div className="flex-1 h-1.5 rounded-full bg-donna-elevated overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${100 - finalPct}%`, background: color }}
         />
       </div>
-      <span className="text-[9px] text-[#9CA3AF] shrink-0 tabular-nums">
+      <span className="text-[9px] text-donna-subtle shrink-0 tabular-nums">
         {done}/{total}
       </span>
     </div>
@@ -64,8 +64,8 @@ export default function ProjectsCard({ projects }: ProjectsCardProps) {
         <CardList>
           {active.length === 0 ? (
             <div className="py-8 text-center">
-              <FolderOpen size={24} className="text-[#E5E7EB] mx-auto mb-2" />
-              <p className="text-sm text-[#9CA3AF]">No active projects</p>
+              <FolderOpen size={24} className="text-donna-border mx-auto mb-2" />
+              <p className="text-sm text-donna-subtle">No active projects</p>
               <Link href="/projects" className="text-xs text-[#7C3AED] hover:underline mt-1 inline-block">
                 Create one →
               </Link>
@@ -81,7 +81,7 @@ export default function ProjectsCard({ projects }: ProjectsCardProps) {
                 return (
                   <li
                     key={proj.id}
-                    className="group px-3 py-2.5 rounded-xl hover:bg-[#FAFAFA] transition-colors"
+                    className="group px-3 py-2.5 rounded-xl hover:bg-donna-elevated transition-colors"
                     style={{ borderLeft: `2.5px solid ${accent}` }}
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -100,7 +100,7 @@ export default function ProjectsCard({ projects }: ProjectsCardProps) {
                             </div>
                           </div>
                         )}
-                        <p className="text-sm font-medium text-[#111827] truncate">{proj.title}</p>
+                        <p className="text-sm font-medium text-donna-text truncate">{proj.title}</p>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
                         {active_tasks > 0 && (
@@ -112,7 +112,7 @@ export default function ProjectsCard({ projects }: ProjectsCardProps) {
                           </span>
                         )}
                         {total === 0 && (
-                          <span className="text-[10px] text-[#9CA3AF]">No tasks</span>
+                          <span className="text-[10px] text-donna-subtle">No tasks</span>
                         )}
                       </div>
                     </div>
@@ -122,7 +122,7 @@ export default function ProjectsCard({ projects }: ProjectsCardProps) {
                     )}
 
                     {proj.due_date && (
-                      <p className="text-[10px] text-[#9CA3AF] mt-1">
+                      <p className="text-[10px] text-donna-subtle mt-1">
                         Due {new Date(proj.due_date + 'T12:00:00').toLocaleDateString([], { day: 'numeric', month: 'short' })}
                       </p>
                     )}

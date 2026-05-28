@@ -72,8 +72,8 @@ export default function StatsBar({
       {stats.map(({ label, value, sub, icon: Icon, iconColor, iconBg, valueColor, progress, progressColor }) => (
         <div
           key={label}
-          className="flex items-center gap-3 rounded-2xl px-4 py-3.5 bg-white
-                     border border-[#F0F0F5] transition-shadow
+          className="flex items-center gap-3 rounded-2xl px-4 py-3.5 bg-donna-surface
+                     border border-donna-border transition-shadow
                      hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
         >
           {/* Icon */}
@@ -90,9 +90,9 @@ export default function StatsBar({
               <p className="text-xl font-bold leading-none tabular-nums" style={{ color: valueColor }}>
                 {value}
               </p>
-              <p className="text-[10px] text-[#9CA3AF] truncate">{sub}</p>
+              <p className="text-[10px] text-donna-subtle truncate">{sub}</p>
             </div>
-            <p className="text-[11px] text-[#C4C4CC] mt-0.5 truncate">{label}</p>
+            <p className="text-[11px] text-donna-subtle mt-0.5 truncate">{label}</p>
           </div>
 
           {/* Progress bar (Today card only) */}

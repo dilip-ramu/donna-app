@@ -66,8 +66,8 @@ export default function InboxCard({ items, totalCount }: InboxCardProps) {
         <CardList>
           {visible.length === 0 ? (
             <div className="py-6 text-center">
-              <p className="text-sm text-[#6B7280]">Inbox is clear.</p>
-              <p className="text-[11px] text-[#9CA3AF] mt-1">Nice work.</p>
+              <p className="text-sm text-donna-muted">Inbox is clear.</p>
+              <p className="text-[11px] text-donna-subtle mt-1">Nice work.</p>
             </div>
           ) : (
             <ul>
@@ -76,20 +76,20 @@ export default function InboxCard({ items, totalCount }: InboxCardProps) {
                 return (
                   <li
                     key={item.id}
-                    className="flex items-start gap-3 py-2.5 border-b border-[#F3F3F7] last:border-0 group"
+                    className="flex items-start gap-3 py-2.5 border-b border-donna-border last:border-0 group"
                   >
-                    <div className="w-7 h-7 rounded-lg bg-[#F0F0F5] flex items-center justify-center shrink-0 mt-0.5">
-                      <Icon size={13} className="text-[#6B7280]" strokeWidth={1.8} />
+                    <div className="w-7 h-7 rounded-lg bg-donna-elevated flex items-center justify-center shrink-0 mt-0.5">
+                      <Icon size={13} className="text-donna-muted" strokeWidth={1.8} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#111827] leading-snug line-clamp-2">
+                      <p className="text-sm font-medium text-donna-text leading-snug line-clamp-2">
                         {item.raw_content}
                       </p>
-                      <p className="text-[11px] text-[#9CA3AF] mt-0.5">{formatTime(item.created_at)}</p>
+                      <p className="text-[11px] text-donna-subtle mt-0.5">{formatTime(item.created_at)}</p>
                     </div>
                     <button
                       onClick={() => handleDismiss(item.id)}
-                      className="text-[#D1D5DB] hover:text-[#6B7280] opacity-0 group-hover:opacity-100
+                      className="text-donna-subtle hover:text-donna-muted opacity-0 group-hover:opacity-100
                                  transition-all shrink-0 mt-0.5"
                       aria-label="Dismiss"
                     >

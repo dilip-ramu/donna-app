@@ -480,7 +480,7 @@ function ChatTab({ userId }: { userId: string }) {
         <div className="shrink-0 flex items-center justify-end px-4 pt-2 pb-0.5">
           <button
             onClick={clearChat}
-            className="flex items-center gap-1 text-[11px] text-[#9CA3AF] hover:text-[#EF4444] transition-colors"
+            className="flex items-center gap-1 text-[11px] text-donna-subtle hover:text-[#EF4444] transition-colors"
           >
             <Trash2 size={11} />
             Clear chat
@@ -499,8 +499,8 @@ function ChatTab({ userId }: { userId: string }) {
                 style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.12), rgba(147,51,234,0.12))' }}>
                 <Sparkles size={18} className="text-[#7C3AED]" />
               </div>
-              <p className="text-sm font-semibold text-[#111827]">Hi, I&apos;m Donna</p>
-              <p className="text-[12px] text-[#9CA3AF] mt-0.5 leading-relaxed">
+              <p className="text-sm font-semibold text-donna-text">Hi, I&apos;m Donna</p>
+              <p className="text-[12px] text-donna-subtle mt-0.5 leading-relaxed">
                 Just type to chat. Use the chips below for<br />tasks, memory, finance, and more.
               </p>
             </div>
@@ -515,12 +515,12 @@ function ChatTab({ userId }: { userId: string }) {
                     setTimeout(() => textareaRef.current?.focus(), 50)
                   }}
                   className="flex items-center justify-between w-full text-left px-3.5 py-2.5
-                             rounded-xl border border-[#EEEEEE] text-[13px] text-[#374151]
+                             rounded-xl border border-donna-border text-[13px] text-donna-muted
                              hover:border-[#D8B4FE] hover:text-[#7C3AED] hover:bg-[#FAFAFF]
                              transition-all duration-150 group"
                 >
                   <span>{s.text}</span>
-                  <ChevronRight size={13} className="text-[#D1D5DB] group-hover:text-[#7C3AED] shrink-0" />
+                  <ChevronRight size={13} className="text-donna-subtle group-hover:text-[#7C3AED] shrink-0" />
                 </button>
               ))}
             </div>
@@ -551,8 +551,8 @@ function ChatTab({ userId }: { userId: string }) {
                 <div className={cn(
                   'rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed',
                   msg.role === 'user'
-                    ? 'bg-[#111827] text-white rounded-tr-sm'
-                    : 'bg-[#F4F4F8] text-[#111827] rounded-tl-sm',
+                    ? 'bg-donna-text text-donna-surface rounded-tr-sm'
+                    : 'bg-donna-elevated text-donna-text rounded-tl-sm',
                 )}>
                   {msg.content === '' && msg.role === 'assistant' ? (
                     <span className="flex gap-1 items-center py-0.5">
@@ -578,7 +578,7 @@ function ChatTab({ userId }: { userId: string }) {
                         }}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium
                                    border border-[#D8B4FE] text-[#7C3AED] bg-[#FAFAFF]
-                                   hover:bg-[#F5F3FF] active:scale-95 transition-all"
+                                   hover:bg-donna-violet-light active:scale-95 transition-all"
                       >
                         <Landmark size={11} />
                         {acc.name}
@@ -608,7 +608,7 @@ function ChatTab({ userId }: { userId: string }) {
                 className={cn(
                   'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium',
                   'border transition-all duration-150',
-                  isActive ? 'border-current' : 'border-[#EEEEEE] text-[#6B7280] hover:border-[#D1D5DB] hover:text-[#374151]',
+                  isActive ? 'border-current' : 'border-donna-border text-donna-muted hover:border-donna-border hover:text-donna-muted',
                 )}
                 style={isActive ? { background: mode.bg, color: mode.color, borderColor: mode.color } : {}}
               >
@@ -637,7 +637,7 @@ function ChatTab({ userId }: { userId: string }) {
             }}
             placeholder={activeCfg ? activeCfg.placeholder : 'Ask Donna anything…'}
             rows={1}
-            className="flex-1 text-sm text-[#111827] placeholder:text-[#B0B0C0]
+            className="flex-1 text-sm text-donna-text placeholder:text-donna-subtle
                        bg-transparent resize-none outline-none border-none
                        leading-relaxed min-w-0 appearance-none"
             style={{
@@ -654,7 +654,7 @@ function ChatTab({ userId }: { userId: string }) {
             aria-label="Send"
             className={cn(
               'w-7 h-7 rounded-full flex items-center justify-center transition-all shrink-0 mb-0.5',
-              input.trim() ? 'text-white' : 'bg-[#F0F0F5] text-[#C4C4CC] cursor-default',
+              input.trim() ? 'text-white' : 'bg-donna-elevated text-donna-subtle cursor-default',
             )}
             style={input.trim() ? { background: activeCfg ? activeCfg.color : '#7C3AED' } : {}}
           >
@@ -666,7 +666,7 @@ function ChatTab({ userId }: { userId: string }) {
         </div>
 
         {isBusy && (
-          <p className="text-[10px] text-[#9CA3AF] text-center -mt-1">
+          <p className="text-[10px] text-donna-subtle text-center -mt-1">
             Donna is thinking…
           </p>
         )}
@@ -713,7 +713,7 @@ function MemoryTab({ notes: initialNotes }: { notes: InboxItem[] }) {
   return (
     <div className="flex flex-col flex-1 min-h-0 px-4">
       <div className="py-3 shrink-0">
-        <div className="rounded-2xl border border-[#E8E8EE] bg-donna-elevated p-3">
+        <div className="rounded-2xl border border-donna-border bg-donna-elevated p-3">
           <textarea
             ref={textareaRef}
             value={value}
@@ -721,11 +721,11 @@ function MemoryTab({ notes: initialNotes }: { notes: InboxItem[] }) {
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave() } }}
             placeholder="Write something to remember…"
             rows={2}
-            className="w-full resize-none bg-transparent text-sm text-[#111827]
-                       placeholder:text-[#9CA3AF] outline-none leading-relaxed appearance-none"
+            className="w-full resize-none bg-transparent text-sm text-donna-text
+                       placeholder:text-donna-subtle outline-none leading-relaxed appearance-none"
           />
           <div className="flex items-center justify-between mt-2">
-            <p className="text-[10px] text-[#C4C4CC]">↵ to save</p>
+            <p className="text-[10px] text-donna-subtle">↵ to save</p>
             <button
               onClick={handleSave}
               disabled={!value.trim() || saveState !== 'idle'}
@@ -743,19 +743,19 @@ function MemoryTab({ notes: initialNotes }: { notes: InboxItem[] }) {
       <div className="flex-1 overflow-y-auto min-h-0 space-y-2 pb-4">
         {notes.length === 0 ? (
           <div className="py-8 text-center">
-            <BookMarked size={24} className="text-[#D1D5DB] mx-auto mb-2" />
-            <p className="text-sm text-[#9CA3AF]">Nothing in memory yet.</p>
+            <BookMarked size={24} className="text-donna-subtle mx-auto mb-2" />
+            <p className="text-sm text-donna-subtle">Nothing in memory yet.</p>
           </div>
         ) : (
           notes.map((note, i) => (
-            <div key={note.id} className="text-sm text-[#111827] leading-snug py-2.5 px-3"
+            <div key={note.id} className="text-sm text-donna-text leading-snug py-2.5 px-3"
               style={{
                 borderLeft: `3px solid ${BORDER_COLORS[i % BORDER_COLORS.length]}`,
                 background: '#FAFAFA',
                 borderRadius: '0 10px 10px 0',
               }}>
               <p className="line-clamp-3">{note.raw_content.replace(/^\[memory\]\s*/i, '')}</p>
-              <p className="text-[10px] text-[#9CA3AF] mt-1.5">{formatNoteDate(note.created_at)}</p>
+              <p className="text-[10px] text-donna-subtle mt-1.5">{formatNoteDate(note.created_at)}</p>
             </div>
           ))
         )}
@@ -781,20 +781,20 @@ function InboxTab({ items: initialItems }: { items: InboxItem[] }) {
     <div className="flex-1 overflow-y-auto min-h-0 px-4 py-3 space-y-1">
       {items.length === 0 ? (
         <div className="py-10 text-center">
-          <Inbox size={24} className="text-[#D1D5DB] mx-auto mb-2" />
-          <p className="text-sm text-[#9CA3AF]">Inbox is clear.</p>
-          <p className="text-[11px] text-[#C4C4CC] mt-0.5">Nice work.</p>
+          <Inbox size={24} className="text-donna-subtle mx-auto mb-2" />
+          <p className="text-sm text-donna-subtle">Inbox is clear.</p>
+          <p className="text-[11px] text-donna-subtle mt-0.5">Nice work.</p>
         </div>
       ) : (
         items.map(item => (
           <div key={item.id}
             className="group flex items-start gap-3 p-3 rounded-xl hover:bg-donna-elevated transition-colors cursor-default">
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-[#111827] leading-snug line-clamp-2">{item.raw_content}</p>
-              <p className="text-[10px] text-[#9CA3AF] mt-1">{formatNoteDate(item.created_at)}</p>
+              <p className="text-sm text-donna-text leading-snug line-clamp-2">{item.raw_content}</p>
+              <p className="text-[10px] text-donna-subtle mt-1">{formatNoteDate(item.created_at)}</p>
             </div>
             <button onClick={() => handleDismiss(item.id)}
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-[#D1D5DB] hover:text-[#EF4444] shrink-0 mt-0.5"
+              className="opacity-0 group-hover:opacity-100 transition-opacity text-donna-subtle hover:text-[#EF4444] shrink-0 mt-0.5"
               aria-label="Dismiss">
               <Trash2 size={13} />
             </button>
@@ -826,8 +826,8 @@ export default function RightPanel({ userId, memoryNotes, inboxItems }: RightPan
             <Sparkles size={13} className="text-white" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[#111827] leading-none">Donna</p>
-            <p className="text-[10px] text-[#9CA3AF] mt-0.5">Your personal secretary</p>
+            <p className="text-sm font-semibold text-donna-text leading-none">Donna</p>
+            <p className="text-[10px] text-donna-subtle mt-0.5">Your personal secretary</p>
           </div>
         </div>
         <div className="flex gap-1 bg-donna-elevated p-1 rounded-xl">
@@ -837,7 +837,7 @@ export default function RightPanel({ userId, memoryNotes, inboxItems }: RightPan
                 'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-all duration-150',
                 tab === id
                   ? 'bg-donna-surface text-donna-text shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
-                  : 'text-[#6B7280] hover:text-[#111827]'
+                  : 'text-donna-muted hover:text-donna-text'
               )}>
               <Icon size={12} strokeWidth={tab === id ? 2.2 : 1.8} />
               {label}

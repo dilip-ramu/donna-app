@@ -69,13 +69,13 @@ export default function MemoryCard({ notes }: MemoryCardProps) {
               }}
               placeholder="Write something to remember… ↵ save"
               rows={2}
-              className="w-full resize-none bg-transparent text-sm text-[#111827]
-                         placeholder:text-[#9CA3AF] outline-none leading-snug"
+              className="w-full resize-none bg-transparent text-sm text-donna-text
+                         placeholder:text-donna-subtle outline-none leading-snug"
             />
             <div className="flex justify-end gap-2 mt-2">
               <button
                 onClick={() => { setIsAdding(false); setValue('') }}
-                className="text-xs text-[#9CA3AF] hover:text-[#6B7280] px-2 py-1"
+                className="text-xs text-donna-subtle hover:text-donna-muted px-2 py-1"
               >Cancel</button>
               <button
                 onClick={handleSave}
@@ -95,7 +95,7 @@ export default function MemoryCard({ notes }: MemoryCardProps) {
         <CardList>
           {notes.length === 0 && !isAdding ? (
             <div className="py-6 text-center">
-              <p className="text-sm text-[#6B7280]">Nothing in memory yet.</p>
+              <p className="text-sm text-donna-muted">Nothing in memory yet.</p>
               <button
                 onClick={openAdd}
                 className="text-xs text-[#7C3AED] hover:underline mt-1"
@@ -115,10 +115,10 @@ export default function MemoryCard({ notes }: MemoryCardProps) {
                     background: '#FAFAFA',
                   }}
                 >
-                  <p className="flex-1 text-sm text-[#111827] leading-snug line-clamp-1 min-w-0">
+                  <p className="flex-1 text-sm text-donna-text leading-snug line-clamp-1 min-w-0">
                     {note.raw_content.replace(/^\[memory\]\s*/i, '')}
                   </p>
-                  <span className="text-[10px] text-[#9CA3AF] shrink-0">
+                  <span className="text-[10px] text-donna-subtle shrink-0">
                     {formatDate(note.created_at)}
                   </span>
                 </li>

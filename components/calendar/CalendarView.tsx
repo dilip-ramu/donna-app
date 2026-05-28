@@ -443,7 +443,7 @@ export default function CalendarView({ tasks, meetings }: CalendarViewProps) {
             {/* Google Calendar */}
             <div className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-donna-border hover:border-donna-border/80 hover:bg-donna-elevated/50 transition-all cursor-not-allowed group">
               {/* Google coloured dot icon */}
-              <div className="w-8 h-8 rounded-lg bg-white border border-donna-border flex items-center justify-center shrink-0 shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-donna-surface border border-donna-border flex items-center justify-center shrink-0 shadow-sm">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <circle cx="8" cy="8" r="4" fill="#4285F4"/>
                   <path d="M8 4v4l2.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
