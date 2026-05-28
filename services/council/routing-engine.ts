@@ -55,6 +55,14 @@ function contextBoosts(message: string, memberId: MemberId): number {
   return Math.min(0.4, boost)
 }
 
+// ── Name detection ────────────────────────────────────────────────────────────
+// If the user directly addresses a member by name, always include them.
+
+const MEMBER_NAME_PATTERNS: Record<string, RegExp> = {
+  professor: /\b(professor|prof)\b/i,
+  aega:      /\b(aega)\b/i,
+}
+
 // ── Router ────────────────────────────────────────────────────────────────────
 
 export function routeMessage(userMessage: string): RoutingDecision {
@@ -66,6 +74,18 @@ export function routeMessage(userMessage: string): RoutingDecision {
         memberId: member.id,
         confidence: 1.0,
         reasons: ['always participates'],
+        shouldParticipate: true,
+      })
+      continue
+    }
+
+    // Direct name address → always include
+    const namePattern = MEMBER_NAME_PATTERNS[member.id]
+    if (namePattern && namePattern.test(userMessage)) {
+      scores.push({
+        memberId: member.id,
+        confidence: 1.0,
+        reasons: ['directly addressed by name'],
         shouldParticipate: true,
       })
       continue
