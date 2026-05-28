@@ -56,11 +56,12 @@ function contextBoosts(message: string, memberId: MemberId): number {
 }
 
 // ── Name detection ────────────────────────────────────────────────────────────
-// If the user directly addresses a member by name, always include them.
+// Only fires when the user is DIRECTLY addressing a member, not just mentioning them.
+// "Aega, what's my balance?" → yes. "Aega is useless" → no.
 
 const MEMBER_NAME_PATTERNS: Record<string, RegExp> = {
-  professor: /\b(professor|prof)\b/i,
-  aega:      /\b(aega)\b/i,
+  professor: /^(hey\s+)?(professor|prof)[,!?\s]|@professor|ask (the\s+)?professor/i,
+  aega:      /^(hey\s+)?aega[,!?\s]|@aega|ask aega/i,
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
