@@ -7,7 +7,8 @@ import type { MemberId } from '@/types/council/member'
 
 // ── Markdown-lite renderer (same as right-panel) ──────────────────────────────
 
-function renderContent(text: string) {
+function renderContent(text: string | undefined | null) {
+  if (!text) return null
   const lines = text.split('\n')
   return lines.map((line, i) => {
     // Headers

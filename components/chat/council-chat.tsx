@@ -19,10 +19,22 @@ const STORAGE_KEY     = (userId: string) => `donna_council_${userId}`
 const MAX_STORED      = 60
 const MAX_API_HISTORY = 20
 
+const VALID_MEMBER_IDS = new Set(['donna', 'professor', 'aega'])
+
 function loadMessages(userId: string): CouncilMessage[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY(userId))
-    return raw ? JSON.parse(raw) : []
+    if (!raw) return []
+    const parsed: unknown[] = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    // Sanitize — drop any message that would crash the renderer
+    return parsed.filter((m): m is CouncilMessage => {
+      if (!m || typeof m !== 'object') return false
+      const msg = m as Record<string, unknown>
+      if (!msg.id || !msg.role || typeof msg.content !== 'string') return false
+      if (msg.role === 'council' && !VALID_MEMBER_IDS.has(msg.memberId as string)) return false
+      return true
+    })
   } catch { return [] }
 }
 
