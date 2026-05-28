@@ -371,55 +371,61 @@ export default function FullCalendarCard({ tasks, meetings }: FullCalendarCardPr
     <DashboardCard>
       <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
         {/* ── Header ── */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0 border-b border-[#F0F0F5]">
-          {/* Nav */}
-          <div className="flex items-center gap-1.5">
+        <div className="flex flex-col px-4 pt-3.5 pb-2.5 shrink-0 border-b border-[#F0F0F5] gap-2">
+
+          {/* Row 1: view toggle (left) + Open link (right) */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-0.5">
+              {(['day', 'week', 'month'] as CalView[]).map(v => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`text-[11px] font-medium rounded-lg transition-colors ${
+                    view === v
+                      ? 'bg-[#7C3AED] text-white'
+                      : 'text-[#6B7280] hover:bg-[#F4F4F8]'
+                  }`}
+                  style={{ minWidth: 48, minHeight: 34, padding: '0 10px' }}
+                >
+                  {/* Full label on md+, abbreviated on mobile */}
+                  <span className="hidden sm:inline">{v.charAt(0).toUpperCase() + v.slice(1)}</span>
+                  <span className="sm:hidden">{v.charAt(0).toUpperCase()}</span>
+                </button>
+              ))}
+            </div>
+            <Link
+              href="/calendar"
+              className="text-[11px] font-medium text-[#7C3AED] hover:underline"
+            >
+              Open →
+            </Link>
+          </div>
+
+          {/* Row 2: prev / title / next / today */}
+          <div className="flex items-center gap-1">
             <button
               onClick={() => navigate(-1)}
-              className="p-1.5 rounded-lg hover:bg-[#F4F4F8] text-[#6B7280] transition-colors"
+              className="p-1.5 rounded-lg hover:bg-[#F4F4F8] text-[#6B7280] transition-colors shrink-0"
             >
               <ChevronLeft size={14} />
             </button>
-            <span className="text-sm font-semibold text-[#111827] min-w-[150px] text-center">
+            <span className="flex-1 text-sm font-semibold text-[#111827] text-center truncate">
               {titleLabel}
             </span>
             <button
               onClick={() => navigate(1)}
-              className="p-1.5 rounded-lg hover:bg-[#F4F4F8] text-[#6B7280] transition-colors"
+              className="p-1.5 rounded-lg hover:bg-[#F4F4F8] text-[#6B7280] transition-colors shrink-0"
             >
               <ChevronRight size={14} />
             </button>
             <button
               onClick={() => setBaseDate(new Date())}
-              className="ml-1 text-[10px] font-medium px-2 py-0.5 rounded-md border border-[#E5E7EB] text-[#6B7280]
-                         hover:border-[#7C3AED] hover:text-[#7C3AED] transition-colors"
+              className="ml-1 text-[10px] font-medium px-2 py-1 rounded-md border border-[#E5E7EB] text-[#6B7280]
+                         hover:border-[#7C3AED] hover:text-[#7C3AED] transition-colors shrink-0"
+              style={{ minHeight: 28 }}
             >
               Today
             </button>
-          </div>
-
-          {/* View toggle + link */}
-          <div className="flex items-center gap-0.5">
-            {(['day', 'week', 'month'] as CalView[]).map(v => (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                className={`text-[11px] font-medium px-3 py-2 md:px-2.5 md:py-1 rounded-lg transition-colors capitalize ${
-                  view === v
-                    ? 'bg-[#7C3AED] text-white'
-                    : 'text-[#6B7280] hover:bg-[#F4F4F8]'
-                }`}
-                style={{ minWidth: 44, minHeight: 36 }}
-              >
-                {v.charAt(0).toUpperCase() + v.slice(1)}
-              </button>
-            ))}
-            <Link
-              href="/calendar"
-              className="ml-2 text-[11px] font-medium text-[#7C3AED] hover:underline"
-            >
-              Open →
-            </Link>
           </div>
         </div>
 
