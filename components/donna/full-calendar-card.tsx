@@ -399,18 +399,19 @@ export default function FullCalendarCard({ tasks, meetings }: FullCalendarCardPr
           </div>
 
           {/* View toggle + link */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             {(['day', 'week', 'month'] as CalView[]).map(v => (
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className={`text-[11px] font-medium px-2.5 py-1 rounded-lg transition-colors capitalize ${
+                className={`text-[11px] font-medium px-3 py-2 md:px-2.5 md:py-1 rounded-lg transition-colors capitalize ${
                   view === v
                     ? 'bg-[#7C3AED] text-white'
                     : 'text-[#6B7280] hover:bg-[#F4F4F8]'
                 }`}
+                style={{ minWidth: 44, minHeight: 36 }}
               >
-                {v}
+                {v.charAt(0).toUpperCase() + v.slice(1)}
               </button>
             ))}
             <Link

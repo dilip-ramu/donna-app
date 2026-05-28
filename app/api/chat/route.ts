@@ -47,6 +47,16 @@ async function getUserContext(userId: string): Promise<string> {
       .is('deleted_at', null)
       .limit(10)
 
+    // Fetch memory notes (tagged [memory] in inbox)
+    const { data: memoryRaw } = await supabase
+      .from('inbox_items')
+      .select('raw_content, created_at')
+      .eq('user_id', userId)
+      .is('dismissed_at', null)
+      .ilike('raw_content', '[memory]%')
+      .order('created_at', { ascending: false })
+      .limit(8)
+
     let context = `Today's date: ${today}\n\n`
 
     if (tasks && tasks.length > 0) {
@@ -59,9 +69,19 @@ async function getUserContext(userId: string): Promise<string> {
     }
 
     if (inbox && inbox.length > 0) {
-      context += `## Inbox Items (${inbox.length} unprocessed)\n`
-      inbox.slice(0, 5).forEach((i: { raw_content: string; category?: string | null }) => {
-        context += `- ${i.raw_content}${i.category ? ` [${i.category}]` : ''}\n`
+      context += `## Inbox (${inbox.length} unprocessed)\n`
+      inbox.slice(0, 5).forEach((i: { raw_content: string }) => {
+        if (!i.raw_content.startsWith('[memory]')) {
+          context += `- ${i.raw_content}\n`
+        }
+      })
+      context += '\n'
+    }
+
+    if (memoryRaw && memoryRaw.length > 0) {
+      context += `## Memory Notes\n`
+      memoryRaw.forEach((i: { raw_content: string }) => {
+        context += `- ${i.raw_content.replace(/^\[memory\]\s*/i, '')}\n`
       })
       context += '\n'
     }
@@ -92,27 +112,31 @@ export async function POST(req: NextRequest) {
 
     const userContext = await getUserContext(userId)
 
-    const systemPrompt = `You are Donna — a sharp, warm personal AI chief of staff. You help the user stay on top of their work and life with clarity and calm confidence.
+    const systemPrompt = `You are Donna — a sharp, warm personal AI chief of staff built for one person. Your job is to help them stay clear-headed, focused, and on top of everything that matters.
 
-Your personality:
-- Direct and efficient, but never cold
-- Proactive — you notice patterns and surface what matters
-- You remember context within this conversation
-- You never pad responses with unnecessary words
-- You use markdown sparingly (only when it genuinely helps)
-- Short, crisp answers unless depth is needed
+Personality:
+- Direct and efficient, never cold or robotic
+- Warm but not sycophantic — skip filler phrases like "Great question!"
+- You notice what matters and surface it proactively
+- Short, crisp answers unless the user is clearly asking for depth
+- Markdown only when it genuinely helps readability (avoid gratuitous bullets)
+- First-person conversational tone, like a trusted colleague
 
-Your capabilities:
-- Summarizing tasks, inbox, and projects
-- Helping prioritize and plan the day
-- Capturing ideas and notes (tell the user to use the inbox capture for now)
-- Answering questions about their workload
-- Thinking through problems together
+What you can do:
+- Give a smart summary of tasks, inbox, and projects
+- Help the user prioritise, plan their day, and think through decisions
+- Answer questions about their workload, upcoming commitments, and backlog
+- Think through problems, draft things, brainstorm ideas
+- For logging expenses or querying finances → remind them to switch to Finance mode
 
-Current user context:
-${userContext}
+Rules:
+- Be specific: use real task/project names from context when you refer to them
+- If you don't have enough information, say so concisely and suggest where to look
+- Never invent tasks or projects that aren't in the context
+- Keep responses conversational unless a structured list genuinely helps
 
-When referring to tasks or projects, be specific with names. If you don't have information about something, say so briefly and suggest where to find it.`
+Current snapshot of the user's world:
+${userContext}`
 
     const encoder = new TextEncoder()
 

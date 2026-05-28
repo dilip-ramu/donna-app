@@ -21,6 +21,7 @@ const fmt = (n: number, currency = 'INR') =>
 export async function routeFinanceIntent(
   intent: FinanceIntent,
   userId: string,
+  opts?: { accountId?: string },  // explicit account ID from chooser
 ): Promise<FinanceActionResult> {
 
   switch (intent.kind) {
@@ -39,6 +40,7 @@ export async function routeFinanceIntent(
           type: 'expense',
           amount: intent.amount,
           accountHint: intent.accountHint,
+          accountId: opts?.accountId,
           categoryHint: intent.categoryHint,
           description: deriveName(intent),
           date: intent.dateHint ?? new Date().toISOString().slice(0, 10),
@@ -65,6 +67,7 @@ export async function routeFinanceIntent(
           type: 'income',
           amount: intent.amount,
           accountHint: intent.accountHint,
+          accountId: opts?.accountId,
           categoryHint: intent.categoryHint,
           description: deriveName(intent),
           date: intent.dateHint ?? new Date().toISOString().slice(0, 10),

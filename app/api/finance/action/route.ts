@@ -22,14 +22,14 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Parse request body
-  let body: { text: string }
+  let body: { text: string; accountId?: string }
   try {
-    body = await req.json() as { text: string }
+    body = await req.json() as { text: string; accountId?: string }
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { text } = body
+  const { text, accountId } = body
   if (!text?.trim()) {
     return NextResponse.json({ error: 'text is required' }, { status: 400 })
   }
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
   // 5. Route to action (using Vaultr's user ID, not Donna's)
   let result: FinanceActionResult
   try {
-    result = await routeFinanceIntent(intent, vaultrUserId)
+    result = await routeFinanceIntent(intent, vaultrUserId, { accountId })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown error'
     console.error('[finance/action] routing error:', msg)

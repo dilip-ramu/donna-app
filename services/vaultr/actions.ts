@@ -12,7 +12,7 @@
 import { vaultrDb, vaultrUrl } from './db'
 import { getAccounts, getCategories } from './finance'
 import type {
-  VTransactionType, FinanceActionResult,
+  VTransactionType, FinanceActionResult, VAccount,
 } from '@/types/contracts/vaultr'
 
 // ── Create transaction (expense / income) ─────────────────────────────────
@@ -22,6 +22,7 @@ export interface CreateTransactionPayload {
   type: VTransactionType
   amount: number
   accountHint: string | null    // resolved against user's accounts by name fuzzy match
+  accountId?: string | null     // explicit account ID (from chooser, overrides hint)
   categoryHint: string | null   // resolved against user's categories
   description: string
   date: string                  // YYYY-MM-DD
@@ -32,7 +33,7 @@ export async function createTransaction(
   payload: CreateTransactionPayload,
 ): Promise<FinanceActionResult> {
   const db = vaultrDb()
-  const { userId, type, amount, accountHint, categoryHint, description, date, notes } = payload
+  const { userId, type, amount, accountHint, accountId, categoryHint, description, date, notes } = payload
 
   // 1. Resolve account
   const accounts   = await getAccounts(userId)
@@ -45,12 +46,34 @@ export async function createTransaction(
     }
   }
 
-  const account = resolveByName(accounts, accountHint)
-  if (!account) {
-    const names = accounts.map(a => a.name).join(', ')
-    return {
-      status: 'needs_confirmation',
-      message: `I couldn't find "${accountHint}" in your accounts. Your accounts are: **${names}**. Which one should I use?`,
+  // If explicit accountId provided (user picked from chooser chips), use it directly
+  let account: VAccount | null = null
+  if (accountId) {
+    account = accounts.find(a => a.id === accountId) ?? null
+    if (!account) {
+      return { status: 'error', message: 'Selected account not found. Please try again.' }
+    }
+  } else {
+    // Fuzzy resolve by hint; if multiple candidates → show chooser
+    const candidates = resolveByNameMulti(accounts, accountHint)
+    if (candidates.length === 1) {
+      account = candidates[0]
+    } else if (candidates.length === 0) {
+      // No match at all — show all accounts as choices
+      return {
+        status: 'choose_account',
+        message: accountHint
+          ? `I couldn't find an account matching **"${accountHint}"**. Pick one:`
+          : 'Which account should I use?',
+        accounts: accounts.map(a => ({ id: a.id, name: a.name, type: a.type })),
+      }
+    } else {
+      // Multiple fuzzy matches — let user pick
+      return {
+        status: 'choose_account',
+        message: `I found a few accounts that could match **"${accountHint}"**. Which one?`,
+        accounts: candidates.map(a => ({ id: a.id, name: a.name, type: a.type })),
+      }
     }
   }
 
@@ -139,20 +162,34 @@ function normalise(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim()
 }
 
+/** Returns a single unambiguous match, or null when there are 0 or 2+ matches. */
 function resolveByName<T extends Named>(items: T[], hint: string | null): T | null {
   if (!hint || items.length === 0) return items[0] ?? null
+  const matches = resolveByNameMulti(items, hint)
+  return matches.length === 1 ? matches[0] : null
+}
+
+/** Returns all items that fuzzy-match the hint, in order of confidence. */
+function resolveByNameMulti<T extends Named>(items: T[], hint: string | null): T[] {
+  if (!hint) return items  // no hint → return all (caller handles)
 
   const q = normalise(hint)
 
-  // Exact match
-  let match = items.find(i => normalise(i.name) === q)
-  if (match) return match
+  // Exact match → single confident result
+  const exact = items.filter(i => normalise(i.name) === q)
+  if (exact.length > 0) return exact
 
-  // Starts-with match
-  match = items.find(i => normalise(i.name).startsWith(q) || q.startsWith(normalise(i.name)))
-  if (match) return match
+  // Starts-with / contains match (hint is prefix of name, or name is prefix of hint)
+  const prefix = items.filter(i => {
+    const n = normalise(i.name)
+    return n.startsWith(q) || q.startsWith(n)
+  })
+  if (prefix.length > 0) return prefix
 
-  // Substring match
-  match = items.find(i => normalise(i.name).includes(q) || q.includes(normalise(i.name)))
-  return match ?? null
+  // Substring match in either direction
+  const sub = items.filter(i => {
+    const n = normalise(i.name)
+    return n.includes(q) || q.includes(n)
+  })
+  return sub
 }

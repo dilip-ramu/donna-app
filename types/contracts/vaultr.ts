@@ -176,11 +176,23 @@ export interface FinanceIntent {
 
 // ── Action result ──────────────────────────────────────────────────────────
 
-export type FinanceActionStatus = 'success' | 'error' | 'needs_confirmation' | 'redirect'
+export type FinanceActionStatus =
+  | 'success'
+  | 'error'
+  | 'needs_confirmation'
+  | 'choose_account'   // Ambiguous account — show picker chips to user
+  | 'redirect'
+
+export interface FinanceAccountChoice {
+  id: string
+  name: string
+  type: VAccountType
+}
 
 export interface FinanceActionResult {
   status: FinanceActionStatus
   message: string             // Human-readable response for Donna's chat
   data?: Record<string, unknown>
   redirectUrl?: string        // Vaultr deep-link when action must be done there
+  accounts?: FinanceAccountChoice[]  // Populated when status === 'choose_account'
 }

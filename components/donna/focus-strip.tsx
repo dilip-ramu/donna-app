@@ -15,7 +15,32 @@ export default function FocusStrip() {
       className="shrink-0 rounded-2xl bg-white border border-[#F0F0F5] overflow-hidden"
       style={{ marginTop: 'clamp(12px, 1.5vw, 16px)' }}
     >
-      <div className="flex items-stretch divide-x divide-[#F0F0F5]">
+      {/* Mobile layout: quote + link in a single compact row */}
+      <div
+        className="flex items-center gap-3 px-4 py-3.5 md:hidden"
+        style={{ background: 'linear-gradient(to right, #F5F3FF, #FAFAFF)' }}
+      >
+        <span
+          className="text-4xl leading-none select-none shrink-0 font-serif"
+          style={{ color: 'rgba(124,58,237,0.25)', fontFamily: 'Georgia, serif' }}
+        >
+          "
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-medium text-[#111827] leading-snug">{QUOTE}</p>
+          <p className="text-[11px] text-[#9CA3AF] mt-0.5">{QUOTE_ATTR}</p>
+        </div>
+        <Link
+          href="/focus"
+          className="flex items-center gap-1 text-[11px] font-medium text-[#7C3AED]
+                     whitespace-nowrap shrink-0"
+        >
+          Focus <ArrowRight size={11} />
+        </Link>
+      </div>
+
+      {/* Desktop layout: quote + tips + link side by side */}
+      <div className="hidden md:flex items-stretch divide-x divide-[#F0F0F5]">
 
         {/* Quote block */}
         <div
