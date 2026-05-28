@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Camera, Check, Trash2, Zap, BarChart2, Brain, type LucideIcon } from 'lucide-react'
+import { Camera, Check, Trash2 } from 'lucide-react'
 import {
   getAvatarUrl, setAvatarUrl, compressAvatar, AVATAR_UPDATED_EVENT,
 } from '@/lib/council-avatars'
@@ -155,7 +155,6 @@ interface MemberProfile {
   description: string
   expertise: ExpertiseTag[]
   activatesWhen: string
-  Icon: LucideIcon
   alwaysOn?: boolean
 }
 
@@ -176,7 +175,6 @@ const PROFILES: MemberProfile[] = [
       { label: 'Follow-ups' },
     ],
     activatesWhen: 'Every message — Donna is always in the conversation.',
-    Icon:          Zap,
     alwaysOn:      true,
   },
   {
@@ -195,7 +193,6 @@ const PROFILES: MemberProfile[] = [
       { label: 'Sequencing' },
     ],
     activatesWhen: 'Joins when you mention planning, strategy, milestones, rollouts, or deadlines.',
-    Icon:          Brain,
   },
   {
     id:          'aega',
@@ -213,12 +210,11 @@ const PROFILES: MemberProfile[] = [
       { label: 'Cash Flow' },
     ],
     activatesWhen: 'Joins when you mention payments, expenses, invoices, amounts, or financial terms.',
-    Icon:          BarChart2,
   },
 ]
 
 function MemberCard({ profile }: { profile: MemberProfile }) {
-  const { id, name, role, accentColor, accentBg, initial, tagline, description, expertise, activatesWhen, Icon, alwaysOn } = profile
+  const { id, name, role, accentColor, accentBg, initial, tagline, description, expertise, activatesWhen, alwaysOn } = profile
 
   return (
     <div
@@ -277,7 +273,7 @@ function MemberCard({ profile }: { profile: MemberProfile }) {
 
           {/* When it activates */}
           <div className="mt-3 flex items-start gap-1.5">
-            <Icon size={11} className="shrink-0 mt-0.5" style={{ color: accentColor } as React.CSSProperties} />
+            <span className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full" style={{ background: accentColor, opacity: 0.6 }} />
             <p className="text-[11px] text-donna-subtle leading-snug">{activatesWhen}</p>
           </div>
         </div>
