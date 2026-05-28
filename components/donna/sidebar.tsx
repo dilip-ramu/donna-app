@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils/cn'
 import ThemeToggle from './theme-toggle'
 import {
   Home, Inbox, CheckSquare, Calendar, BookMarked,
-  Users, Target, FolderOpen, Star, BookOpen, Settings,
+  Users, Target, FolderOpen, Star, BookOpen, Settings, Bot,
 } from 'lucide-react'
 
 const NAV = [
@@ -15,6 +15,7 @@ const NAV = [
   { href: '/inbox',      label: 'Inbox',      icon: Inbox },
   { href: '/tasks',      label: 'Tasks',      icon: CheckSquare },
   { href: '/calendar',   label: 'Calendar',   icon: Calendar },
+  { href: '/council',    label: 'Council',    icon: Bot },
   { href: '/memory',     label: 'Memory',     icon: BookMarked },
   { href: '/meetings',   label: 'Meetings',   icon: Users },
   { href: '/focus',      label: 'Focus',      icon: Target },
