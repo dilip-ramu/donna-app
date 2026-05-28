@@ -69,8 +69,8 @@ export default function MemberMessage({ message, userDisplayName }: MemberMessag
     )
   }
 
-  const memberId = message.memberId as MemberId
-  const member   = getMember(memberId)
+  const memberId = (message.memberId ?? 'donna') as MemberId
+  const member   = getMember(memberId) ?? getMember('donna')
 
   return (
     <div className="flex items-end gap-2 animate-fade-in">
