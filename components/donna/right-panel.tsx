@@ -5,11 +5,14 @@ import {
   Sparkles, Send, Plus, Check, Loader2, Trash2,
   MessageSquare, BookMarked, Inbox,
   CheckSquare, Brain, CalendarDays, PenLine, X, Landmark, ExternalLink,
-  ChevronRight,
+  ChevronRight, Users,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { InboxItem } from '@/lib/types'
 import { BORDER_COLORS } from '@/lib/donna-theme'
+import CouncilChat from '@/components/chat/council-chat'
+import MemberAvatar from '@/components/chat/member-avatar'
+import type { MemberId } from '@/types/council/member'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -751,7 +754,7 @@ function MemoryTab({ notes: initialNotes }: { notes: InboxItem[] }) {
             <div key={note.id} className="text-sm text-donna-text leading-snug py-2.5 px-3"
               style={{
                 borderLeft: `3px solid ${BORDER_COLORS[i % BORDER_COLORS.length]}`,
-                background: '#FAFAFA',
+                background: 'var(--c-elevated)',
                 borderRadius: '0 10px 10px 0',
               }}>
               <p className="line-clamp-3">{note.raw_content.replace(/^\[memory\]\s*/i, '')}</p>
@@ -820,14 +823,20 @@ export default function RightPanel({ userId, memoryNotes, inboxItems }: RightPan
     <aside className="flex flex-col w-full lg:w-[320px] shrink-0 bg-donna-surface border-l border-donna-border overflow-hidden">
       {/* Header */}
       <div className="shrink-0 px-5 pt-4 pb-0">
-        <div className="flex items-center gap-2.5 mb-3.5">
-          <div className="w-7 h-7 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #7C3AED, #9333EA)' }}>
-            <Sparkles size={13} className="text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-donna-text leading-none">Donna</p>
-            <p className="text-[10px] text-donna-subtle mt-0.5">Your personal secretary</p>
+        <div className="flex items-center justify-between mb-3.5">
+          <div className="flex items-center gap-2.5">
+            {/* Stacked council avatars */}
+            <div className="flex items-center">
+              {(['donna', 'professor', 'aega'] as MemberId[]).map((id, i) => (
+                <div key={id} style={{ marginLeft: i > 0 ? -7 : 0, zIndex: 3 - i }}>
+                  <MemberAvatar memberId={id} size="sm" showRing />
+                </div>
+              ))}
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-donna-text leading-none">Council</p>
+              <p className="text-[10px] text-donna-subtle mt-0.5">Donna · Professor · Aega</p>
+            </div>
           </div>
         </div>
         <div className="flex gap-1 bg-donna-elevated p-1 rounded-xl">
@@ -848,7 +857,7 @@ export default function RightPanel({ userId, memoryNotes, inboxItems }: RightPan
 
       {/* Tab content */}
       <div className="flex flex-col flex-1 min-h-0 mt-2">
-        {tab === 'chat'   && <ChatTab userId={userId} />}
+        {tab === 'chat'   && <CouncilChat userId={userId} />}
         {tab === 'memory' && <MemoryTab notes={memoryNotes} />}
         {tab === 'inbox'  && <InboxTab items={inboxItems} />}
       </div>
