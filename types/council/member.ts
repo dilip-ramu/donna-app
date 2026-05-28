@@ -11,7 +11,8 @@ export interface CouncilMember {
   accentColor: string           // Primary brand color (hex)
   accentBg: string              // Tinted background for message bubbles
   accentBgDark: string          // Dark mode bg
-  initial: string               // Avatar letter
+  initial: string               // Avatar letter (fallback when no photo)
+  avatarPath: string | null     // Static public-folder image path, e.g. '/Donna.png'
   participationThreshold: number // 0–1 minimum confidence to participate
   alwaysParticipates: boolean   // true = Donna; overrides threshold
   domainKeywords: string[]      // Heuristic domain signals

@@ -15,6 +15,7 @@ const DONNA: CouncilMember = {
   accentBg: '#F5F3FF',
   accentBgDark: '#1C1030',
   initial: 'D',
+  avatarPath: '/Donna.png',
   participationThreshold: 0,
   alwaysParticipates: true,
   responseOrder: 99,            // Always last — synthesizes
@@ -29,6 +30,7 @@ const PROFESSOR: CouncilMember = {
   accentBg: '#EFF6FF',
   accentBgDark: '#0F1E3D',
   initial: 'P',
+  avatarPath: '/professor.jpg',
   participationThreshold: 0.35,
   alwaysParticipates: false,
   responseOrder: 1,
@@ -73,6 +75,7 @@ const AEGA: CouncilMember = {
   accentBg: '#ECFDF5',
   accentBgDark: '#022C22',
   initial: 'A',
+  avatarPath: '/Aega.png',
   participationThreshold: 0.2,
   alwaysParticipates: false,
   responseOrder: 2,
