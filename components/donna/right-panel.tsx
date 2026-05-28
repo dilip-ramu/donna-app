@@ -160,6 +160,27 @@ function parseDateFromText(text: string): { title: string; dueDate: string | nul
   return { title, dueDate }
 }
 
+// ── Personal fact detector — auto-save to memory ──────────────────────────────
+const PERSONAL_FACT_RE = [
+  /\bmy (?:birthday|birth ?date|dob)\b/i,
+  /\b(?:i was |i'm |i am )?born (?:on|in)\b/i,
+  /\bmy (?:wife|husband|partner|spouse|girlfriend|boyfriend|fianc[eé]{1,2})'?s?\b/i,
+  /\bmy (?:son|daughter|kid|child|baby)'?s?\b/i,
+  /\bmy (?:mom|mother|dad|father|parent|brother|sister|sibling)'?s?\b/i,
+  /\bour (?:anniversary|wedding)\b/i,
+  /\bmy (?:full )?name is\b/i,
+  /\bi (?:live in|am from|grew up in|moved to)\b/i,
+  /\bmy (?:job|role|title|company|employer|business)\b/i,
+  /\bmy (?:phone|email|address|number) (?:is|was)\b/i,
+  /\bi (?:am allergic|can't eat|don't eat|am vegetarian|am vegan)\b/i,
+  /\bmy (?:favourite|favorite)\b/i,
+  /\bi (?:prefer|always|usually|never)\b/i,
+]
+
+function isPersonalFact(text: string): boolean {
+  return PERSONAL_FACT_RE.some(re => re.test(text))
+}
+
 // Suggested prompts for empty state
 const SUGGESTIONS = [
   { text: "What's on my plate today?", mode: null },
@@ -385,6 +406,12 @@ function ChatTab({ userId }: { userId: string }) {
         }
         const id = streamingIdRef.current
         setMessages(prev => prev.map(m => m.id === id ? { ...m, content: accumulated } : m))
+      }
+      // Auto-save personal facts to memory (fire-and-forget)
+      if (isPersonalFact(content)) {
+        import('@/lib/actions/inbox').then(({ createInboxItem }) =>
+          createInboxItem(`[memory] ${content.trim()}`)
+        )
       }
     } catch {
       const id = streamingIdRef.current
@@ -656,13 +683,25 @@ function MemoryTab({ notes: initialNotes }: { notes: InboxItem[] }) {
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'done'>('idle')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  // Refresh from DB on mount (catches items added via chat since page load)
+  useEffect(() => {
+    let cancelled = false
+    import('@/lib/actions/inbox').then(({ getMemoryNotes }) =>
+      getMemoryNotes().then(fresh => { if (!cancelled) setNotes(fresh) })
+    )
+    return () => { cancelled = true }
+  }, [])
+
   const handleSave = async () => {
     if (!value.trim() || saveState !== 'idle') return
     setSaveState('saving')
     try {
-      const { createInboxItem } = await import('@/lib/actions/inbox')
+      const { createInboxItem, getMemoryNotes } = await import('@/lib/actions/inbox')
       const result = await createInboxItem(`[memory] ${value.trim()}`)
-      if (result.data) setNotes(prev => [result.data!, ...prev])
+      if (result.error) { setSaveState('idle'); return }
+      // Refresh the full list so order and deduplication are correct
+      const fresh = await getMemoryNotes()
+      setNotes(fresh)
       setValue('')
       setSaveState('done')
       setTimeout(() => setSaveState('idle'), 1500)

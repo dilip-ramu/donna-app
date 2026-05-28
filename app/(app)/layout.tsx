@@ -25,7 +25,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       .from('inbox_items')
       .select('*')
       .eq('user_id', user.id)
-      .is('dismissed_at', null)
+      .is('deleted_at', null)
       .ilike('raw_content', '[memory]%')
       .order('created_at', { ascending: false })
       .limit(20),
@@ -34,7 +34,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       .from('inbox_items')
       .select('*')
       .eq('user_id', user.id)
-      .is('dismissed_at', null)
+      .is('deleted_at', null)
       .not('raw_content', 'ilike', '[memory]%')
       .order('created_at', { ascending: false })
       .limit(15),

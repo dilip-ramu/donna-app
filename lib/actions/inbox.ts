@@ -40,6 +40,28 @@ export async function createInboxItem(
   return { data: data as InboxItem, error: null }
 }
 
+export async function getMemoryNotes(limit = 30): Promise<InboxItem[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await supabase
+    .from('inbox_items')
+    .select('*')
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .ilike('raw_content', '[memory]%')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('[inbox:get-memory]', error)
+    return []
+  }
+
+  return (data ?? []) as InboxItem[]
+}
+
 export async function getInboxItems(limit = 50): Promise<InboxItem[]> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
