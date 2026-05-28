@@ -138,13 +138,15 @@ function buildExpenseSection(expenseIntent?: ExpenseIntent | null): string {
     return `
 ## Expense detected
 The person mentioned spending ${amountStr} on ${category}. Their usual account for this is ${learnedAccount.accountName}.
-Acknowledge it naturally in your response — "Got it, logging ₹X to [account]" — and confirm it's handled. One sentence, inline, no separate action needed.`
+Acknowledge it naturally — "Got it, logging ₹X to [account]" — one sentence, inline. Do NOT ask any follow-up questions about it.`
   }
 
+  // No preferred account on file — the system will parse the account from their message text.
+  // Donna should just acknowledge and confirm, not ask which account.
   return `
 ## Expense detected
-The person mentioned spending ${amountStr} on ${category}. No preferred account on file yet.
-Ask which account to log it to — one short question, inline, e.g. "Logging ${amountStr} for ${category} — which account?"`
+The person mentioned spending ${amountStr} on ${category}. The system will resolve the account from their message.
+Acknowledge it naturally — "Got it, logging that now" or similar — one sentence, inline. Do NOT ask which account. Do NOT say you need more information.`
 }
 
 // ── Public builder ─────────────────────────────────────────────────────────────

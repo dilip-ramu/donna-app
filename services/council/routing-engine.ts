@@ -6,8 +6,8 @@ import type { ParticipationScore, RoutingDecision } from '@/types/council/partic
 // "Professor, plan this" → yes. "The professor would say..." → no.
 
 const ADDRESS: Record<string, RegExp> = {
-  professor: /^(hey\s+)?(professor|prof)[,!?\s]/i,
-  aega:      /^(hey\s+)?aega[,!?\s]/i,
+  professor: /^(hey\s+)?(professor|prof)[,!?\s\-]/i,
+  aega:      /^(hey\s+)?aega[,!?\s\-]/i,
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────

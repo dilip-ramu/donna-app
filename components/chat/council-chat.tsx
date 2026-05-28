@@ -145,19 +145,31 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
   // Donna already acknowledged the expense in her streamed reply.
   // This just writes the record to Vaultr — no UI feedback needed.
   const silentLogExpense = useCallback(async (intent: ExpenseIntent) => {
-    if (!intent.isExpense || !intent.learnedAccount) return
+    if (!intent.isExpense) return
     try {
+      // If we already know the preferred account, pin it; otherwise let the API
+      // parse the account name from the raw message text (e.g. "from HDFC Savings").
+      const body = intent.learnedAccount
+        ? { text: intent.rawText, accountId: intent.learnedAccount.accountId }
+        : { text: intent.rawText }
+
       const res  = await fetch('/api/finance/action', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body:   JSON.stringify({ text: intent.rawText, accountId: intent.learnedAccount.accountId }),
+        body:   JSON.stringify(body),
       })
-      const json = await res.json() as { result?: { status: string }; error?: string }
+      const json = await res.json() as { result?: { status: string; account?: { id: string; name: string; type: string } }; error?: string }
       if (json.result?.status === 'success' && intent.category) {
-        learnAccount(intent.category, {
-          accountId:   intent.learnedAccount.accountId,
-          accountName: intent.learnedAccount.accountName,
-          accountType: intent.learnedAccount.accountType,
-        })
+        // Learn whichever account was actually used so we can pin it next time
+        const acct = intent.learnedAccount ?? (json.result.account
+          ? { accountId: json.result.account.id, accountName: json.result.account.name, accountType: json.result.account.type }
+          : null)
+        if (acct) {
+          learnAccount(intent.category, {
+            accountId:   acct.accountId,
+            accountName: acct.accountName,
+            accountType: acct.accountType,
+          })
+        }
       }
     } catch { /* silent */ }
   }, [])
@@ -315,7 +327,7 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
               setTypingMembers([]); setIsBusy(false)
               if (busyTimer.current) clearTimeout(busyTimer.current)
               // Donna acknowledged inline — now silently write the record
-              if (expenseIntent.isExpense && expenseIntent.learnedAccount) {
+              if (expenseIntent.isExpense) {
                 silentLogExpense(expenseIntent)
               }
             }
