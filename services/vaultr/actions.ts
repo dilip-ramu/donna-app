@@ -114,7 +114,7 @@ export async function createTransaction(
              (category ? ` · ${category.name}` : '') +
              ` from **${account.name}**` +
              ` on ${new Date(date + 'T12:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,
-    data: { transactionId: data?.id, accountName: account.name },
+    data: { transactionId: data?.id, accountId: account.id, accountName: account.name, accountType: account.type },
   }
 }
 

@@ -78,6 +78,63 @@ const SUGGESTIONS = [
   "Arrange a conference on my travel budget",
 ]
 
+// ── Account picker (shown when Vaultr can't resolve account automatically) ────
+
+const ACCOUNT_TYPE_COLOR: Record<string, string> = {
+  savings:    '#10B981',
+  checking:   '#3B82F6',
+  credit:     '#EF4444',
+  cash:       '#F59E0B',
+  investment: '#8B5CF6',
+  loan:       '#EC4899',
+  other:      '#6B7280',
+}
+
+interface AccountChoice { id: string; name: string; type: string }
+
+function AccountPicker({ accounts, onPick, disabled }: {
+  accounts:  AccountChoice[]
+  onPick:    (id: string, name: string, type: string) => void
+  disabled:  boolean
+}) {
+  return (
+    <div className="flex flex-col gap-1.5 ml-8 mt-1 mb-0.5">
+      {accounts.map(acct => {
+        const color    = ACCOUNT_TYPE_COLOR[acct.type] ?? ACCOUNT_TYPE_COLOR.other
+        const initials = acct.name.split(/\s+/).map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
+        return (
+          <button
+            key={acct.id}
+            onClick={() => onPick(acct.id, acct.name, acct.type)}
+            disabled={disabled}
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40"
+            style={{
+              background: `color-mix(in srgb, ${color} 8%, var(--c-elevated))`,
+              border:     `1px solid color-mix(in srgb, ${color} 30%, transparent)`,
+            }}
+          >
+            {/* Account avatar */}
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold text-[11px] text-white"
+              style={{ background: color }}
+            >
+              {initials}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[12px] font-semibold leading-tight" style={{ color: 'var(--c-text)' }}>
+                {acct.name}
+              </span>
+              <span className="text-[10px] capitalize leading-tight mt-0.5" style={{ color }}>
+                {acct.type}
+              </span>
+            </div>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── Conference round divider ───────────────────────────────────────────────────
 
 function ConferenceDivider({ label, round }: { label: string; round: number }) {
@@ -110,18 +167,26 @@ function ConferenceBanner({ topic }: { topic: string }) {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
+interface PendingAccountPick {
+  messageId:     string
+  rawText:       string
+  expenseIntent: ExpenseIntent
+  accounts:      AccountChoice[]
+}
+
 interface CouncilChatProps {
   userId:       string
   displayName?: string
 }
 
 export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
-  const [messages, setMessages]             = useState<CouncilMessage[]>([])
-  const [input, setInput]                   = useState('')
-  const [isBusy, setIsBusy]                 = useState(false)
-  const [typingMembers, setTypingMembers]   = useState<MemberId[]>([])
-  const [mounted, setMounted]               = useState(false)
-  const [conferenceMode, setConferenceMode] = useState(false)
+  const [messages, setMessages]                   = useState<CouncilMessage[]>([])
+  const [input, setInput]                         = useState('')
+  const [isBusy, setIsBusy]                       = useState(false)
+  const [typingMembers, setTypingMembers]         = useState<MemberId[]>([])
+  const [mounted, setMounted]                     = useState(false)
+  const [conferenceMode, setConferenceMode]       = useState(false)
+  const [pendingAccountPick, setPendingAccountPick] = useState<PendingAccountPick | null>(null)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLTextAreaElement>(null)
@@ -157,22 +222,80 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body:   JSON.stringify(body),
       })
-      const json = await res.json() as { result?: { status: string; account?: { id: string; name: string; type: string } }; error?: string }
-      if (json.result?.status === 'success' && intent.category) {
-        // Learn whichever account was actually used so we can pin it next time
-        const acct = intent.learnedAccount ?? (json.result.account
-          ? { accountId: json.result.account.id, accountName: json.result.account.name, accountType: json.result.account.type }
-          : null)
-        if (acct) {
-          learnAccount(intent.category, {
-            accountId:   acct.accountId,
-            accountName: acct.accountName,
-            accountType: acct.accountType,
-          })
+      const json = await res.json() as {
+        result?: {
+          status:    string
+          message?:  string
+          accounts?: AccountChoice[]
+          data?:     Record<string, unknown>
+        }
+      }
+      const result = json.result
+      if (!result) return
+
+      if (result.status === 'choose_account' && result.accounts?.length) {
+        // API can't resolve the account — show picker chips in chat
+        const msgId = uid()
+        setMessages(prev => [...prev, {
+          id: msgId, role: 'council', memberId: 'donna',
+          content: result.message ?? 'Which account should I log this to?',
+          timestamp: Date.now(),
+        }])
+        setPendingAccountPick({ messageId: msgId, rawText: intent.rawText, expenseIntent: intent, accounts: result.accounts })
+
+      } else if (result.status === 'success' && intent.category) {
+        // Auto-resolved — learn the account for next time
+        const accountId   = result.data?.accountId as string | undefined
+        const accountName = result.data?.accountName as string | undefined
+        const accountType = result.data?.accountType as string | undefined
+        if (accountId && accountName) {
+          learnAccount(intent.category, { accountId, accountName, accountType: accountType ?? 'other' })
         }
       }
     } catch { /* silent */ }
   }, [])
+
+  // ── Handle user picking an account from the picker ─────────────────────────
+  const handleAccountPick = useCallback(async (accountId: string, accountName: string, accountType: string) => {
+    if (!pendingAccountPick) return
+    const { messageId, expenseIntent } = pendingAccountPick
+
+    // Immediately update Donna's message + hide picker
+    setMessages(prev => prev.map(m => m.id === messageId
+      ? { ...m, content: `Logging to ${accountName}…` }
+      : m
+    ))
+    setPendingAccountPick(null)
+
+    try {
+      const res  = await fetch('/api/finance/action', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body:   JSON.stringify({ text: expenseIntent.rawText, accountId }),
+      })
+      const json = await res.json() as { result?: { status: string; message?: string } }
+      const result = json.result
+
+      if (result?.status === 'success') {
+        setMessages(prev => prev.map(m => m.id === messageId
+          ? { ...m, content: `✓ Logged to ${accountName}` }
+          : m
+        ))
+        if (expenseIntent.category) {
+          learnAccount(expenseIntent.category, { accountId, accountName, accountType })
+        }
+      } else {
+        setMessages(prev => prev.map(m => m.id === messageId
+          ? { ...m, content: result?.message ?? 'Couldn\'t log the expense — please try again.' }
+          : m
+        ))
+      }
+    } catch {
+      setMessages(prev => prev.map(m => m.id === messageId
+        ? { ...m, content: 'Something went wrong logging the expense.' }
+        : m
+      ))
+    }
+  }, [pendingAccountPick])
 
   // ── Conference stream ──────────────────────────────────────────────────────────
   const runConference = useCallback(async (topic: string) => {
@@ -415,7 +538,21 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
                 if (msg.round === 0) return <ConferenceBanner key={msg.id} topic={msg.roundLabel ?? ''} />
                 return <ConferenceDivider key={msg.id} label={msg.roundLabel ?? ''} round={msg.round ?? 1} />
               }
-              return <MemberMessage key={msg.id} message={msg} userDisplayName={displayName} />
+              const el = <MemberMessage key={msg.id} message={msg} userDisplayName={displayName} />
+              // If this message is the account-pick prompt, append picker chips below it
+              if (pendingAccountPick?.messageId === msg.id) {
+                return (
+                  <div key={msg.id} className="flex flex-col gap-1">
+                    {el}
+                    <AccountPicker
+                      accounts={pendingAccountPick.accounts}
+                      onPick={handleAccountPick}
+                      disabled={isBusy}
+                    />
+                  </div>
+                )
+              }
+              return el
             })}
 
             {typingMembers.map(id => <TypingIndicator key={id} memberId={id} />)}
