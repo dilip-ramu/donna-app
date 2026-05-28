@@ -2,8 +2,12 @@ import { NextRequest } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServiceClient } from '@/lib/supabase/server'
 
+if (!process.env.ANTHROPIC_API_KEY) {
+  console.error('[chat] ANTHROPIC_API_KEY is not set — AI responses will fail')
+}
+
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  apiKey: process.env.ANTHROPIC_API_KEY ?? 'missing',
 })
 
 export const runtime = 'nodejs'
@@ -108,6 +112,18 @@ export async function POST(req: NextRequest) {
 
     if (!messages || !userId) {
       return new Response('Missing messages or userId', { status: 400 })
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      const stream = new ReadableStream({
+        start(controller) {
+          const encoder = new TextEncoder()
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: '⚠️ ANTHROPIC_API_KEY is not set in your Vercel environment variables. Add it at vercel.com → your project → Settings → Environment Variables, then redeploy.' })}\n\n`))
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+          controller.close()
+        }
+      })
+      return new Response(stream, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } })
     }
 
     const userContext = await getUserContext(userId)

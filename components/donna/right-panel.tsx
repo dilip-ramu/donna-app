@@ -170,8 +170,26 @@ const SUGGESTIONS = [
 
 // ─── Chat Tab ─────────────────────────────────────────────────────────────────
 
+const CHAT_STORAGE_KEY = (uid: string) => `donna_chat_${uid}`
+const MAX_STORED_MSGS  = 40
+
+function loadMessages(userId: string): ChatMessage[] {
+  try {
+    const raw = localStorage.getItem(CHAT_STORAGE_KEY(userId))
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as (Omit<ChatMessage, 'ts'> & { ts: string })[]
+    return parsed.map(m => ({ ...m, ts: new Date(m.ts) }))
+  } catch { return [] }
+}
+
+function saveMessages(userId: string, msgs: ChatMessage[]) {
+  try {
+    localStorage.setItem(CHAT_STORAGE_KEY(userId), JSON.stringify(msgs.slice(-MAX_STORED_MSGS)))
+  } catch { /* quota exceeded — ignore */ }
+}
+
 function ChatTab({ userId }: { userId: string }) {
-  const [messages, setMessages]             = useState<ChatMessage[]>([])
+  const [messages, setMessages]             = useState<ChatMessage[]>(() => loadMessages(userId))
   const [input, setInput]                   = useState('')
   const [activeMode, setActiveMode]         = useState<ChatMode | null>(null)
   const [isBusy, setIsBusy]                 = useState(false)
@@ -182,6 +200,13 @@ function ChatTab({ userId }: { userId: string }) {
   const scrollRef      = useRef<HTMLDivElement>(null)
   const streamingIdRef = useRef<string | null>(null)
   const busyTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Persist messages to localStorage whenever they change
+  useEffect(() => {
+    // Don't save mid-stream (empty assistant placeholder)
+    const settled = messages.filter(m => m.content !== '' || m.role === 'user')
+    saveMessages(userId, settled)
+  }, [userId, messages])
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -413,8 +438,28 @@ function ChatTab({ userId }: { userId: string }) {
 
   const activeCfg = MODES.find(m => m.id === activeMode)
 
+  const clearChat = () => {
+    setMessages([])
+    setPendingFinanceText(null)
+    setPendingAccounts(null)
+    try { localStorage.removeItem(CHAT_STORAGE_KEY(userId)) } catch { /* ignore */ }
+  }
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
+
+      {/* ── Messages header (only when there are messages) ── */}
+      {messages.length > 0 && (
+        <div className="shrink-0 flex items-center justify-end px-4 pt-2 pb-0.5">
+          <button
+            onClick={clearChat}
+            className="flex items-center gap-1 text-[11px] text-[#9CA3AF] hover:text-[#EF4444] transition-colors"
+          >
+            <Trash2 size={11} />
+            Clear chat
+          </button>
+        </div>
+      )}
 
       {/* ── Messages ── */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 px-4 pt-3 pb-2 space-y-3">
@@ -427,9 +472,9 @@ function ChatTab({ userId }: { userId: string }) {
                 style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.12), rgba(147,51,234,0.12))' }}>
                 <Sparkles size={18} className="text-[#7C3AED]" />
               </div>
-              <p className="text-sm font-semibold text-[#111827]">Hi, I'm Donna</p>
+              <p className="text-sm font-semibold text-[#111827]">Hi, I&apos;m Donna</p>
               <p className="text-[12px] text-[#9CA3AF] mt-0.5 leading-relaxed">
-                Your personal secretary. Ask me anything.
+                Just type to chat. Use the chips below for<br />tasks, memory, finance, and more.
               </p>
             </div>
             {/* Quick suggestions */}
