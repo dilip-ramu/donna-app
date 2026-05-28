@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 
 if (!process.env.ANTHROPIC_API_KEY) {
   console.error('[chat] ANTHROPIC_API_KEY is not set — AI responses will fail')
@@ -163,7 +163,7 @@ async function executeTool(name: string, input: Record<string, string>): Promise
 
 async function getUserContext(userId: string): Promise<string> {
   try {
-    const supabase = createServiceClient()
+    const supabase = await createClient()
     const today = new Date().toISOString().split('T')[0]
 
     const [{ data: tasks }, { data: inbox }, { data: projects }, { data: memoryRaw }] =

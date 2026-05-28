@@ -13,7 +13,7 @@ export default async function MemoryPage() {
     .from('inbox_items')
     .select('*')
     .eq('user_id', user.id)
-    .is('dismissed_at', null)
+    .is('deleted_at', null)
     .ilike('raw_content', '[memory]%')
     .order('created_at', { ascending: false })
     .limit(100)
