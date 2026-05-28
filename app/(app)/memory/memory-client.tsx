@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { BookMarked, Plus, Search, Trash2, Loader2, Check } from 'lucide-react'
-import { InboxItem } from '@/lib/types'
-import { cn } from '@/lib/utils/cn'
+import { useState, useEffect, useCallback } from 'react'
+import { BookMarked, Plus, Search, Trash2, Loader2, Check, RefreshCw } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import type { InboxItem } from '@/lib/types'
 
 const BORDER_COLORS = ['#7C3AED', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#EC4899']
 
@@ -41,14 +41,38 @@ function fmtTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-interface Props { notes: InboxItem[] }
+export default function MemoryPageClient() {
+  const [notes, setNotes]     = useState<InboxItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch]   = useState('')
+  const [input, setInput]     = useState('')
+  const [saving, setSaving]   = useState(false)
+  const [saved, setSaved]     = useState(false)
 
-export default function MemoryPageClient({ notes: initial }: Props) {
-  const [notes, setNotes]   = useState(initial)
-  const [search, setSearch] = useState('')
-  const [input, setInput]   = useState('')
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved]   = useState(false)
+  const fetchNotes = useCallback(async () => {
+    setLoading(true)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('inbox_items')
+        .select('*')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .ilike('raw_content', '[memory]%')
+        .order('created_at', { ascending: false })
+        .limit(100)
+
+      if (error) console.error('[memory-page] fetch error:', error)
+      setNotes((data ?? []) as InboxItem[])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchNotes() }, [fetchNotes])
 
   const filtered = search
     ? notes.filter(n => n.raw_content.toLowerCase().includes(search.toLowerCase()))
@@ -60,35 +84,61 @@ export default function MemoryPageClient({ notes: initial }: Props) {
     if (!input.trim() || saving) return
     setSaving(true)
     try {
-      const { createInboxItem } = await import('@/lib/actions/inbox')
-      const result = await createInboxItem(`[memory] ${input.trim()}`)
-      if (result.data) setNotes(prev => [result.data!, ...prev])
-      setInput('')
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { error } = await supabase
+        .from('inbox_items')
+        .insert({
+          user_id: user.id,
+          raw_content: `[memory] ${input.trim()}`,
+          source: 'manual',
+          status: 'unprocessed',
+        })
+
+      if (!error) {
+        setInput('')
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+        await fetchNotes()   // refresh list
+      }
     } finally {
       setSaving(false)
     }
   }
 
-  const handleDismiss = async (id: string) => {
+  const handleForget = async (id: string) => {
     setNotes(prev => prev.filter(n => n.id !== id))
-    const { dismissInboxItem } = await import('@/lib/actions/inbox')
-    await dismissInboxItem(id)
+    const supabase = createClient()
+    await supabase
+      .from('inbox_items')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
   }
 
   return (
     <div className="animate-fade-in flex flex-col gap-6 max-w-2xl">
 
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold text-donna-text flex items-center gap-2">
-          <BookMarked size={18} style={{ color: 'var(--c-violet)' }} />
-          Memory
-        </h1>
-        <p className="text-sm text-donna-muted mt-0.5">
-          {notes.length} thing{notes.length !== 1 ? 's' : ''} remembered
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-donna-text flex items-center gap-2">
+            <BookMarked size={18} style={{ color: 'var(--c-violet)' }} />
+            Memory
+          </h1>
+          <p className="text-sm text-donna-muted mt-0.5">
+            {loading ? 'Loading…' : `${notes.length} thing${notes.length !== 1 ? 's' : ''} remembered`}
+          </p>
+        </div>
+        <button
+          onClick={fetchNotes}
+          className="flex items-center gap-1.5 text-xs text-donna-muted hover:text-donna-text transition-colors"
+          title="Refresh"
+        >
+          <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+          Refresh
+        </button>
       </div>
 
       {/* Add + Search row */}
@@ -121,17 +171,22 @@ export default function MemoryPageClient({ notes: initial }: Props) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search…"
-            className="w-36 text-sm text-donna-text placeholder:text-donna-subtle bg-transparent outline-none"
+            className="w-32 text-sm text-donna-text placeholder:text-donna-subtle bg-transparent outline-none"
           />
         </div>
       </div>
 
-      {/* Notes grouped by date */}
-      {groups.length === 0 ? (
+      {/* Notes */}
+      {loading ? (
+        <div className="page-card py-16 text-center">
+          <Loader2 size={24} className="mx-auto mb-3 text-donna-border animate-spin" />
+          <p className="text-sm text-donna-muted">Loading your memories…</p>
+        </div>
+      ) : groups.length === 0 ? (
         <div className="page-card py-16 text-center">
           <BookMarked size={32} className="mx-auto mb-3 text-donna-border" />
           <p className="text-sm text-donna-muted">
-            {search ? 'No memories match your search.' : 'Nothing in memory yet.'}
+            {search ? 'No memories match your search.' : 'Nothing in memory yet. Tell Donna things to remember.'}
           </p>
         </div>
       ) : (
@@ -145,7 +200,7 @@ export default function MemoryPageClient({ notes: initial }: Props) {
                 {items.map((note, i) => (
                   <div
                     key={note.id}
-                    className="group flex items-start gap-0 hover:bg-donna-elevated transition-colors"
+                    className="group flex items-start hover:bg-donna-elevated transition-colors"
                     style={{ borderLeft: `3px solid ${BORDER_COLORS[i % BORDER_COLORS.length]}` }}
                   >
                     <div className="flex-1 min-w-0 px-4 py-3">
@@ -155,7 +210,7 @@ export default function MemoryPageClient({ notes: initial }: Props) {
                       <p className="text-[10px] text-donna-subtle mt-1">{fmtTime(note.created_at)}</p>
                     </div>
                     <button
-                      onClick={() => handleDismiss(note.id)}
+                      onClick={() => handleForget(note.id)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity p-3 text-donna-subtle
                                  hover:text-[#EF4444] shrink-0"
                       aria-label="Forget"
