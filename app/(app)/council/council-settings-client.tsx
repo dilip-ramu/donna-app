@@ -185,7 +185,7 @@ const PROFILES: MemberProfile[] = [
     accentBg:    'rgba(29,78,216,0.07)',
     initial:     'P',
     tagline:     'Plans from first principles. No fluff.',
-    description: "The Professor thinks in systems — sequences, dependencies, failure points. He's stepped back from the day-to-day and sees the structure underneath. When you're planning a rollout, setting a timeline, or sequencing complex work, he lays it out clearly and calls out what will go wrong first.",
+    description: "The Professor thinks in systems — sequences, dependencies, failure points. He's stepped back from the noise and sees the structure underneath. When you're planning a launch, setting a timeline, or sequencing complex work, he lays it out and calls out what will go wrong before it does.",
     expertise:   [
       { label: 'Roadmaps & Phases' },
       { label: 'Risk & Dependencies' },
@@ -202,7 +202,7 @@ const PROFILES: MemberProfile[] = [
     accentBg:    'rgba(5,150,105,0.07)',
     initial:     'A',
     tagline:     'Leads with numbers. No padding.',
-    description: "Aega handles the money side — expenses, invoices, what's owed, what's overdue, cash flow. Sharp and efficient, she says what the data says and flags what's wrong. Log an expense in plain English and she'll confirm and record it, learning your preferred accounts so you never have to repeat yourself.",
+    description: "Aega handles the money side — expenses, invoices, what's owed, what's overdue, cash flow. Sharp and efficient, he says what the data says and flags what's wrong. Log an expense in plain English and he'll confirm and record it, learning your preferred accounts so you never have to repeat yourself.",
     expertise:   [
       { label: 'Expense Logging' },
       { label: 'Invoice Tracking' },

@@ -38,6 +38,9 @@ function contextBoosts(message: string, memberId: MemberId): number {
     if (/how should i|how do i|what.*best way|where.*start|what.*first/i.test(lower)) boost += 0.15
     if (/next.*month|next.*quarter|over.*year|6 month|12 month/i.test(lower)) boost += 0.15
     if (/\bphase\s*\d|\bstep\s*\d|\bstage\s*\d/i.test(lower)) boost += 0.2
+    // Financial decision questions — Professor weighs in on big spending choices
+    if (/can i afford|should i (spend|buy|invest|pay)|is it (worth|a good idea|smart)|do i have (enough|the money)/i.test(lower)) boost += 0.35
+    if (/\b(lakh|lac|lacs|lakhs)\b|\b\d{5,}\b/i.test(lower)) boost += 0.2   // large amounts
   }
 
   if (memberId === 'aega') {

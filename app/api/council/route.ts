@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { routeMessage } from '@/services/council/routing-engine'
 import { buildSystemPrompt } from '@/services/council/system-prompts'
 import { getMember } from '@/services/council/member-registry'
+import { getFinanceSummary, getAccounts } from '@/services/vaultr/finance'
+import { resolveVaultrUserId } from '@/services/vaultr/db'
 import type { MemberId } from '@/types/council/member'
 import type { ApiCouncilMessage } from '@/types/council/message'
 import type { StreamEvent } from '@/types/council/routing'
@@ -103,6 +105,53 @@ async function getUserContext(userId: string): Promise<string> {
   }
 }
 
+// ── Financial Context ─────────────────────────────────────────────────────────
+
+async function getFinancialContext(email: string): Promise<string | null> {
+  try {
+    const vaultrUserId = await resolveVaultrUserId(email)
+    if (!vaultrUserId) return null
+
+    const [summary, accounts] = await Promise.all([
+      getFinanceSummary(vaultrUserId).catch(() => null),
+      getAccounts(vaultrUserId).catch(() => []),
+    ])
+
+    let ctx = ''
+
+    if (accounts.length > 0) {
+      ctx += '## Accounts\n'
+      accounts
+        .filter(a => a.is_active)
+        .forEach(a => {
+          const bal = typeof a.initial_balance === 'number'
+            ? `₹${a.initial_balance.toLocaleString('en-IN')}`
+            : 'unknown balance'
+          ctx += `- ${a.name} (${a.type}): ${bal}\n`
+        })
+      ctx += '\n'
+    }
+
+    if (summary) {
+      ctx += `## Financial Summary\n`
+      ctx += `Net worth: ₹${Number(summary.netWorth).toLocaleString('en-IN')}\n`
+      ctx += `Monthly income: ₹${Number(summary.monthlyIncome).toLocaleString('en-IN')}\n`
+      ctx += `Monthly expenses: ₹${Number(summary.monthlyExpense).toLocaleString('en-IN')}\n`
+      ctx += `Monthly balance: ₹${Number(summary.monthlyBalance).toLocaleString('en-IN')}\n`
+      if (summary.topAccounts?.length) {
+        ctx += '\n## Account Balances\n'
+        summary.topAccounts.forEach(a => {
+          ctx += `- ${a.name} (${a.type}): ₹${Number(a.balance).toLocaleString('en-IN')}\n`
+        })
+      }
+    }
+
+    return ctx || null
+  } catch {
+    return null
+  }
+}
+
 // ── Conversation History Formatter ────────────────────────────────────────────
 // Converts council message history to Anthropic API format.
 // Council messages are labeled with member name so Claude maintains context.
@@ -124,13 +173,15 @@ async function* generateMemberResponse(
   userContext: string,
   routing: RoutingDecision,
   expenseIntent?: ExpenseIntent | null,
+  financialContext?: string | null,
 ): AsyncGenerator<string> {
   const member    = getMember(memberId)
   const systemPrompt = buildSystemPrompt(memberId, {
     userContext,
-    participants:  routing.participants,
-    isDonnaAlone:  routing.isDonnaAlone,
-    expenseIntent: memberId === 'aega' ? expenseIntent : null,
+    participants:    routing.participants,
+    isDonnaAlone:    routing.isDonnaAlone,
+    expenseIntent:   memberId === 'aega' ? expenseIntent : null,
+    financialContext: memberId === 'aega' ? financialContext : null,
   })
 
   const history   = buildApiHistory(messages)
@@ -184,8 +235,13 @@ export async function POST(req: NextRequest) {
     const lastUserMessage = messages[messages.length - 1]?.content ?? ''
     const routing = routeMessage(lastUserMessage)
 
-    // Fetch user context (shared across all member prompts)
-    const userContext = await getUserContext(userId)
+    // Fetch user context and financial context in parallel
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    const [userContext, financialContext] = await Promise.all([
+      getUserContext(userId),
+      user?.email ? getFinancialContext(user.email).catch(() => null) : Promise.resolve(null),
+    ])
 
     const encoder = new TextEncoder()
 
@@ -197,10 +253,29 @@ export async function POST(req: NextRequest) {
         try {
           // Stream each participant in order
           for (const memberId of routing.participants) {
+            // For Donna when specialists are present: buffer output and suppress if empty/trivial
+            if (memberId === 'donna' && !routing.isDonnaAlone) {
+              let donnaText = ''
+              try {
+                for await (const text of generateMemberResponse(memberId, messages, userContext, routing, expenseIntent, financialContext)) {
+                  donnaText += text
+                }
+              } catch { /* suppress errors too */ }
+
+              const trimmed = donnaText.trim()
+              // Only show Donna if she has something substantive (>10 chars, not just filler)
+              if (trimmed.length > 10) {
+                send({ phase: 'member_start', memberId })
+                send({ phase: 'text', memberId, text: trimmed })
+                send({ phase: 'member_end', memberId })
+              }
+              continue
+            }
+
             send({ phase: 'member_start', memberId })
 
             try {
-              for await (const text of generateMemberResponse(memberId, messages, userContext, routing, expenseIntent)) {
+              for await (const text of generateMemberResponse(memberId, messages, userContext, routing, expenseIntent, financialContext)) {
                 send({ phase: 'text', memberId, text })
               }
             } catch (err) {
