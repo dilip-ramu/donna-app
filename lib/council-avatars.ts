@@ -19,6 +19,8 @@ export function getAvatarUrl(id: AvatarOwnerId): string | null {
   return localStorage.getItem(storageKey(id))
 }
 
+const ALL_AVATAR_IDS: AvatarOwnerId[] = ['donna', 'professor', 'aega', 'user']
+
 /** Persist a data URL and broadcast the change to all mounted components. */
 export function setAvatarUrl(id: AvatarOwnerId, dataUrl: string | null): void {
   if (typeof window === 'undefined') return
@@ -26,8 +28,17 @@ export function setAvatarUrl(id: AvatarOwnerId, dataUrl: string | null): void {
     try {
       localStorage.setItem(storageKey(id), dataUrl)
     } catch {
-      // Storage quota — try removing others to make room, then re-try once
-      console.warn('[council-avatars] localStorage quota exceeded')
+      // Storage quota — evict all OTHER avatars to make room, then retry once
+      console.warn('[council-avatars] quota exceeded — evicting others and retrying')
+      for (const otherId of ALL_AVATAR_IDS) {
+        if (otherId !== id) localStorage.removeItem(storageKey(otherId))
+      }
+      try {
+        localStorage.setItem(storageKey(id), dataUrl)
+      } catch {
+        console.error('[council-avatars] still failed after eviction — image too large')
+        return
+      }
     }
   } else {
     localStorage.removeItem(storageKey(id))
