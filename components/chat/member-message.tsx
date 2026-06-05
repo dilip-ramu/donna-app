@@ -51,9 +51,10 @@ function renderContent(text: string | undefined | null) {
 interface MemberMessageProps {
   message: CouncilMessage
   userDisplayName?: string
+  userId?: string
 }
 
-export default function MemberMessage({ message, userDisplayName }: MemberMessageProps) {
+export default function MemberMessage({ message, userDisplayName, userId = '' }: MemberMessageProps) {
   const isUser = message.role === 'user'
 
   if (isUser) {
@@ -65,7 +66,7 @@ export default function MemberMessage({ message, userDisplayName }: MemberMessag
         >
           {message.content}
         </div>
-        <UserAvatar size="sm" displayName={userDisplayName} />
+        <UserAvatar size="sm" displayName={userDisplayName} userId={userId} />
       </div>
     )
   }
@@ -75,7 +76,7 @@ export default function MemberMessage({ message, userDisplayName }: MemberMessag
 
   return (
     <div className="flex items-end gap-2 animate-fade-in">
-      <MemberAvatar memberId={memberId} size="sm" />
+      <MemberAvatar memberId={memberId} userId={userId} size="sm" />
 
       <div className="flex flex-col gap-0.5 max-w-[82%]">
         {/* Member label */}

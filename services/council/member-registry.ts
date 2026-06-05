@@ -1,11 +1,6 @@
 import type { CouncilMember, MemberId } from '@/types/council/member'
 
-// ── Member Definitions ────────────────────────────────────────────────────────
-// To add a new council member:
-//   1. Add id to MemberId in types/council/member.ts
-//   2. Define member here
-//   3. Add to MEMBERS record + MEMBER_LIST array
-//   4. Add system prompt in system-prompts.ts
+// ── Existing core members ──────────────────────────────────────────────────────
 
 const DONNA: CouncilMember = {
   id: 'donna',
@@ -16,10 +11,11 @@ const DONNA: CouncilMember = {
   accentBgDark: '#1C1030',
   initial: 'D',
   avatarPath: '/Donna.png',
+  profileDoc: null,   // personality is hardcoded; no .docx profile
   participationThreshold: 0,
   alwaysParticipates: true,
-  responseOrder: 99,            // Always last — synthesizes
-  domainKeywords: [],           // Donna has no domain filter; she always participates
+  responseOrder: 99,
+  domainKeywords: [],
 }
 
 const PROFESSOR: CouncilMember = {
@@ -31,39 +27,18 @@ const PROFESSOR: CouncilMember = {
   accentBgDark: '#0F1E3D',
   initial: 'P',
   avatarPath: '/professor.jpg',
+  profileDoc: 'professor',
   participationThreshold: 0.35,
   alwaysParticipates: false,
   responseOrder: 1,
   domainKeywords: [
-    'plan', 'plans', 'planning', 'planned',
-    'roadmap', 'strategy', 'strategic',
-    'phase', 'phased', 'phases',
-    'milestone', 'milestones',
-    'timeline', 'sequence', 'sequencing',
-    'rollout', 'launch', 'launching',
-    'implement', 'implementation',
-    'contingency', 'contingencies',
-    'dependency', 'dependencies',
-    'risk', 'risks',
-    'architecture', 'architect',
-    'prioritize', 'priority', 'priorities',
-    'quarter', 'month', 'months', 'week', 'weeks',
-    'schedule', 'scheduling',
-    'execution', 'execute',
-    'deliver', 'delivery',
-    'steps', 'next steps',
-    'approach', 'framework',
-    'workflow', 'workplan',
-    'stage', 'stages',
-    'how should i build', 'how do i build',
-    'how should i launch', 'how should i roll',
-    'what should i do first', 'where do i start',
-    'build over', 'over the next',
-    'structure', 'organize',
-    'breakdown', 'break down',
-    'feasibility', 'viable', 'mvp',
-    'sprint', 'iteration', 'iterate',
-    'objective', 'objectives', 'goal', 'goals',
+    'plan', 'plans', 'planning', 'roadmap', 'strategy', 'strategic',
+    'phase', 'milestone', 'timeline', 'sequence', 'rollout', 'launch',
+    'implement', 'contingency', 'dependency', 'risk', 'architecture',
+    'prioritize', 'priority', 'schedule', 'execution', 'deliver',
+    'steps', 'next steps', 'approach', 'framework', 'workflow',
+    'stage', 'feasibility', 'mvp', 'sprint', 'iteration',
+    'objective', 'goal', 'breakdown', 'structure',
   ],
 }
 
@@ -76,55 +51,155 @@ const AEGA: CouncilMember = {
   accentBgDark: '#022C22',
   initial: 'A',
   avatarPath: '/Aega.png',
+  profileDoc: null,   // personality hardcoded; no .docx profile
   participationThreshold: 0.2,
   alwaysParticipates: false,
   responseOrder: 2,
   domainKeywords: [
-    'expense', 'expenses', 'spent', 'spend',
-    'invoice', 'invoices',
-    'payment', 'payments', 'pay',
-    'balance', 'balances',
-    'recoverable', 'recoverables', 'recover',
-    'supplier', 'suppliers', 'vendor', 'vendors',
-    'cash', 'cashflow', 'cash flow',
-    'money', 'budget', 'budgets',
-    'financial', 'finance', 'finances',
-    'log expense', 'record expense',
-    'receipt', 'receipts',
-    'transaction', 'transactions',
-    'owe', 'owes', 'owed',
-    'paid', 'unpaid', 'pending payment',
-    'charge', 'charged',
-    'cost', 'costs',
-    'revenue', 'income', 'profit',
-    '₹', '$', '€', '£',
-    'inex', 'aega', 'vaultr',
-    'accounts', 'account',
-    'outstanding', 'due',
-    'salary', 'payroll',
-    'tax', 'gst', 'vat',
-    'net worth', 'networth', 'wealth',
-    'assets', 'liabilities',
-    'savings', 'investment', 'investments',
-    'portfolio', 'returns',
-    'loan', 'loans', 'debt', 'debts',
-    'credit', 'debit',
-    'afford', 'afford to',
-    'how much do i have', 'how much have i spent',
-    'how much is', 'how much are',
+    'expense', 'expenses', 'spent', 'spend', 'invoice', 'payment',
+    'balance', 'recoverable', 'supplier', 'cash', 'cashflow',
+    'money', 'budget', 'financial', 'finance', 'receipt', 'transaction',
+    'owe', 'paid', 'charge', 'cost', 'revenue', 'income', 'profit',
+    '₹', '$', '€', '£', 'inex', 'aega', 'vaultr',
+    'accounts', 'outstanding', 'salary', 'tax', 'net worth',
+    'assets', 'liabilities', 'savings', 'investment', 'loan', 'debt', 'credit',
   ],
+}
+
+// ── New council members ────────────────────────────────────────────────────────
+
+const CORLEONE: CouncilMember = {
+  id: 'corleone',
+  name: 'Michael Corleone',
+  role: 'The Don',
+  accentColor: '#8B1A1A',
+  accentBg: '#FFF5F5',
+  accentBgDark: '#2D0A0A',
+  initial: 'MC',
+  avatarPath: '/Michael-Corleone.png',
+  profileDoc: 'michael corleone',
+  participationThreshold: 1,
+  alwaysParticipates: false,
+  responseOrder: 3,
+  domainKeywords: [],
+}
+
+const ABAGNALE: CouncilMember = {
+  id: 'abagnale',
+  name: 'Frank Abagnale',
+  role: 'Con Artist & Hustler',
+  accentColor: '#1565C0',
+  accentBg: '#E3F2FD',
+  accentBgDark: '#0A1929',
+  initial: 'FA',
+  avatarPath: '/Abagnale.jpg',
+  profileDoc: 'frank william abagnale jr',
+  participationThreshold: 1,
+  alwaysParticipates: false,
+  responseOrder: 4,
+  domainKeywords: [],
+}
+
+const SPECTER: CouncilMember = {
+  id: 'specter',
+  name: 'Harvey Specter',
+  role: 'Closer',
+  accentColor: '#92400E',
+  accentBg: '#FFFBEB',
+  accentBgDark: '#2D1A0A',
+  initial: 'HS',
+  avatarPath: '/Harvey.jpg',
+  profileDoc: 'harvey specter',
+  participationThreshold: 1,
+  alwaysParticipates: false,
+  responseOrder: 5,
+  domainKeywords: [],
+}
+
+const PAULSEN: CouncilMember = {
+  id: 'paulsen',
+  name: 'Donna Paulsen',
+  role: 'COO',
+  accentColor: '#9D174D',
+  accentBg: '#FDF2F8',
+  accentBgDark: '#2D0A1E',
+  initial: 'DP',
+  avatarPath: '/DonnaPaulsen.png',
+  profileDoc: 'donna paulsen',
+  participationThreshold: 1,
+  alwaysParticipates: false,
+  responseOrder: 6,
+  domainKeywords: [],
+}
+
+const SHERLOCK: CouncilMember = {
+  id: 'sherlock',
+  name: 'Sherlock Holmes',
+  role: 'Detective',
+  accentColor: '#374151',
+  accentBg: '#F9FAFB',
+  accentBgDark: '#111827',
+  initial: 'SH',
+  avatarPath: '/sherlock-holmes.png',
+  profileDoc: 'sherlock holmes',
+  participationThreshold: 1,
+  alwaysParticipates: false,
+  responseOrder: 7,
+  domainKeywords: [],
+}
+
+const REDDINGTON: CouncilMember = {
+  id: 'reddington',
+  name: 'Raymond Reddington',
+  role: 'Fixer',
+  accentColor: '#6D1A36',
+  accentBg: '#FFF0F5',
+  accentBgDark: '#2D0A16',
+  initial: 'RR',
+  avatarPath: '/Raymond.avif',
+  profileDoc: 'raymond reddington',
+  participationThreshold: 1,
+  alwaysParticipates: false,
+  responseOrder: 8,
+  domainKeywords: [],
+}
+
+const ROCK: CouncilMember = {
+  id: 'rock',
+  name: 'The Rock',
+  role: 'Execution',
+  accentColor: '#B45309',
+  accentBg: '#FFFBEB',
+  accentBgDark: '#2D1B00',
+  initial: 'DR',
+  avatarPath: '/the-rock.jpeg',
+  profileDoc: 'the rock',
+  participationThreshold: 1,
+  alwaysParticipates: false,
+  responseOrder: 9,
+  domainKeywords: [],
 }
 
 // ── Registry ──────────────────────────────────────────────────────────────────
 
 export const MEMBERS: Record<MemberId, CouncilMember> = {
-  donna: DONNA,
-  professor: PROFESSOR,
-  aega: AEGA,
+  donna:      DONNA,
+  professor:  PROFESSOR,
+  aega:       AEGA,
+  corleone:   CORLEONE,
+  abagnale:   ABAGNALE,
+  specter:    SPECTER,
+  paulsen:    PAULSEN,
+  sherlock:   SHERLOCK,
+  reddington: REDDINGTON,
+  rock:       ROCK,
 }
 
-// Ordered for iteration (specialists first, Donna last)
-export const MEMBER_LIST: CouncilMember[] = [PROFESSOR, AEGA, DONNA]
+// Ordered for iteration (specialists first by responseOrder, Donna last)
+export const MEMBER_LIST: CouncilMember[] = [
+  PROFESSOR, AEGA, CORLEONE, ABAGNALE, SPECTER,
+  PAULSEN, SHERLOCK, REDDINGTON, ROCK, DONNA,
+]
 
 export function getMember(id: MemberId): CouncilMember {
   return MEMBERS[id]

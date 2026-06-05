@@ -830,7 +830,7 @@ export default function RightPanel({ userId, displayName, memoryNotes, inboxItem
             <div className="flex items-center">
               {(['donna', 'professor', 'aega'] as MemberId[]).map((id, i) => (
                 <div key={id} style={{ marginLeft: i > 0 ? -7 : 0, zIndex: 3 - i }}>
-                  <MemberAvatar memberId={id} size="sm" showRing />
+                  <MemberAvatar memberId={id} userId={userId} size="sm" showRing />
                 </div>
               ))}
             </div>

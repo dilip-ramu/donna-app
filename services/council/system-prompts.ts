@@ -1,6 +1,7 @@
 import type { MemberId } from '@/types/council/member'
 import type { ExpenseIntent } from '@/lib/learned-accounts'
 import type { KnowledgeBase } from '@/lib/knowledge/loader'
+import { getMember } from '@/services/council/member-registry'
 
 interface PromptOptions {
   userContext:       string
@@ -61,8 +62,8 @@ function donnaPrompt({
     .map(id => id === 'professor' ? 'Professor' : 'Aega')
     .join(' and ')
 
-  // Use uploaded profile if available, otherwise fall back to hardcoded personality
-  const profile = knowledge?.memberProfiles.get('donna') ?? `You are Donna — chief of staff, primary contact for everything.
+  // Donna has no profileDoc — personality is always hardcoded
+  const profile = `You are Donna — chief of staff, primary contact for everything.
 Warm but direct. You have opinions. You get things done and report back without sending people elsewhere.
 You work alongside Professor (planning) and Aega (finance). Neither of them can write to systems — expense logging is always yours.`
 
@@ -88,7 +89,7 @@ ${contextSection}`
 // ── Professor ──────────────────────────────────────────────────────────────────
 
 function professorPrompt({ userContext, financialContext, knowledge }: PromptOptions): string {
-  const profile = knowledge?.memberProfiles.get('professor') ?? `You are the Professor — called in for structured, methodical thinking.
+  const profile = knowledge?.memberProfiles.get('professor') ?? knowledge?.memberProfiles.get('the professor') ?? `You are the Professor — called in for structured, methodical thinking.
 You think in systems. You see dependencies, sequences, and failure points before anyone else. Calm, precise, not warm.
 When there's a real risk, you name it plainly in one clause. You don't soften anything.`
 
@@ -148,6 +149,31 @@ function buildExpenseSection(expenseIntent?: ExpenseIntent | null): string {
   return `\n## Expense detected\nSpending of ${amountStr} on ${category} — account will be resolved from their message. Acknowledge in one sentence inline ("Got it, logging that now"). Do NOT ask which account.\n`
 }
 
+// ── Generic character prompt (for new council members with .docx profiles) ────
+
+function characterPrompt(memberId: MemberId, opts: PromptOptions): string {
+  const { userContext, financialContext, knowledge } = opts
+  const member = getMember(memberId)
+
+  // Look up the profile using the member's profileDoc key (e.g. 'harvey specter')
+  const profileKey = member.profileDoc ?? memberId
+  const profile    = knowledge?.memberProfiles.get(profileKey)
+    ?? `You are ${member.name}.`
+
+  const contextSection = buildContextSection(userContext, knowledge, financialContext)
+
+  return `${profile}
+
+${GROUP_CHAT_RULES}
+
+## Your lane
+You are a specialist called in directly by name. Stay in your character completely.
+You cannot log transactions or write to any external system.
+Never start a message with "I".
+
+${contextSection}`
+}
+
 // ── Public builder ─────────────────────────────────────────────────────────────
 
 export function buildSystemPrompt(memberId: MemberId, opts: PromptOptions): string {
@@ -155,6 +181,6 @@ export function buildSystemPrompt(memberId: MemberId, opts: PromptOptions): stri
     case 'donna':     return donnaPrompt(opts)
     case 'professor': return professorPrompt(opts)
     case 'aega':      return aegaPrompt(opts)
-    default:          return donnaPrompt(opts)
+    default:          return characterPrompt(memberId, opts)
   }
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Camera, Check, Trash2 } from 'lucide-react'
 import {
-  getAvatarUrl, setAvatarUrl, compressAvatar, AVATAR_UPDATED_EVENT,
+  getCachedAvatarUrl, buildAvatarUrl, uploadAvatar, compressAvatar, AVATAR_UPDATED_EVENT,
 } from '@/lib/council-avatars'
 import type { AvatarOwnerId } from '@/lib/council-avatars'
 
@@ -11,13 +11,14 @@ import type { AvatarOwnerId } from '@/lib/council-avatars'
 
 interface AvatarUploaderProps {
   id: AvatarOwnerId
+  userId: string
   name: string
   accentColor: string
   initial: string
   size?: number   // px, default 80
 }
 
-function AvatarUploader({ id, name, accentColor, initial, size = 80 }: AvatarUploaderProps) {
+function AvatarUploader({ id, userId, name, accentColor, initial, size = 80 }: AvatarUploaderProps) {
   const [photoUrl, setPhotoUrl]   = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [flash, setFlash]         = useState(false)
@@ -25,14 +26,24 @@ function AvatarUploader({ id, name, accentColor, initial, size = 80 }: AvatarUpl
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    setPhotoUrl(getAvatarUrl(id))
+    // Try cache first; fall back to building the Supabase URL
+    const cached = getCachedAvatarUrl(id)
+    if (cached) {
+      setPhotoUrl(cached)
+    } else if (userId) {
+      setPhotoUrl(buildAvatarUrl(userId, id))
+    }
+
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ id: AvatarOwnerId }>).detail
-      if (detail.id === id) setPhotoUrl(getAvatarUrl(id))
+      if (detail.id === id) {
+        const fresh = getCachedAvatarUrl(id)
+        setPhotoUrl(fresh ?? (userId ? buildAvatarUrl(userId, id) : null))
+      }
     }
     window.addEventListener(AVATAR_UPDATED_EVENT, handler)
     return () => window.removeEventListener(AVATAR_UPDATED_EVENT, handler)
-  }, [id])
+  }, [id, userId])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -41,14 +52,28 @@ function AvatarUploader({ id, name, accentColor, initial, size = 80 }: AvatarUpl
     setUploading(true); setError(null)
     try {
       const dataUrl = await compressAvatar(file, 260)
-      setAvatarUrl(id, dataUrl)
+      await uploadAvatar(userId, id, dataUrl)
       setFlash(true)
       setTimeout(() => setFlash(false), 1800)
     } catch {
-      setError('Could not process this image.')
+      setError('Could not upload this image. Check your connection.')
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ''
+    }
+  }
+
+  const handleRemove = async () => {
+    // Clear from localStorage cache and reset local state
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(`donna_council_avatar_${id}`)
+    }
+    setPhotoUrl(null)
+    // Broadcast the removal to all mounted instances
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent(AVATAR_UPDATED_EVENT, { detail: { id } })
+      )
     }
   }
 
@@ -123,7 +148,7 @@ function AvatarUploader({ id, name, accentColor, initial, size = 80 }: AvatarUpl
           <>
             <span className="text-donna-subtle text-[11px]">·</span>
             <button
-              onClick={() => setAvatarUrl(id, null)}
+              onClick={handleRemove}
               className="text-[11px] text-donna-subtle hover:text-[#EF4444] transition-colors flex items-center gap-1"
             >
               <Trash2 size={10} />
@@ -213,7 +238,7 @@ const PROFILES: MemberProfile[] = [
   },
 ]
 
-function MemberCard({ profile }: { profile: MemberProfile }) {
+function MemberCard({ profile, userId }: { profile: MemberProfile; userId: string }) {
   const { id, name, role, accentColor, accentBg, initial, tagline, description, expertise, activatesWhen, alwaysOn } = profile
 
   return (
@@ -225,7 +250,7 @@ function MemberCard({ profile }: { profile: MemberProfile }) {
 
         {/* Left: avatar */}
         <div className="shrink-0 flex flex-col items-center pt-1">
-          <AvatarUploader id={id} name={name} accentColor={accentColor} initial={initial} size={72} />
+          <AvatarUploader id={id} userId={userId} name={name} accentColor={accentColor} initial={initial} size={72} />
         </div>
 
         {/* Right: profile info */}
@@ -284,16 +309,16 @@ function MemberCard({ profile }: { profile: MemberProfile }) {
 
 // ── Your card ─────────────────────────────────────────────────────────────────
 
-function YourCard() {
+function YourCard({ userId }: { userId: string }) {
   return (
     <div className="page-card p-5 sm:p-6 flex items-center gap-5" style={{ borderLeft: '3px solid #6B7280' }}>
       <div className="shrink-0">
-        <AvatarUploader id="user" name="You" accentColor="#6B7280" initial="Y" size={56} />
+        <AvatarUploader id="user" userId={userId} name="You" accentColor="#6B7280" initial="Y" size={56} />
       </div>
       <div>
         <h2 className="text-sm font-semibold text-donna-text">You</h2>
         <p className="text-xs text-donna-subtle mt-1 leading-relaxed max-w-sm">
-          Your photo appears on your own messages in the council chat. Upload anything — it stays on this device only.
+          Your photo appears on your own messages in the council chat. It syncs across all your devices.
         </p>
       </div>
     </div>
@@ -302,7 +327,11 @@ function YourCard() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function CouncilSettingsClient() {
+interface CouncilSettingsClientProps {
+  userId: string
+}
+
+export default function CouncilSettingsClient({ userId }: CouncilSettingsClientProps) {
   return (
     <div className="animate-fade-in flex flex-col gap-8 max-w-2xl">
 
@@ -311,14 +340,14 @@ export default function CouncilSettingsClient() {
         <h1 className="text-xl font-semibold text-donna-text">Your Council</h1>
         <p className="text-sm text-donna-muted mt-1.5 leading-relaxed max-w-lg">
           Three specialists — one conversation. Each member brings a different intelligence to the table.
-          They join automatically based on what you're working on.
+          They join automatically based on what you&apos;re working on.
         </p>
       </div>
 
       {/* Member profiles */}
       <div className="flex flex-col gap-4">
         {PROFILES.map(profile => (
-          <MemberCard key={profile.id} profile={profile} />
+          <MemberCard key={profile.id} profile={profile} userId={userId} />
         ))}
       </div>
 
@@ -328,13 +357,12 @@ export default function CouncilSettingsClient() {
       {/* Your card */}
       <div className="flex flex-col gap-3">
         <h2 className="text-sm font-medium text-donna-muted">Your presence</h2>
-        <YourCard />
+        <YourCard userId={userId} />
       </div>
 
       {/* Footer note */}
       <p className="text-[11px] text-donna-subtle leading-relaxed pb-4">
-        Photos are stored locally on this device and are never uploaded to any server.
-        Clearing browser storage will remove them.
+        Photos are stored in Supabase Storage and sync across all your browsers and devices.
       </p>
     </div>
   )

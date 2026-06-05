@@ -1,51 +1,100 @@
 // ── Council Avatar Store ───────────────────────────────────────────────────────
-// Stores avatar photos (as compressed data URLs) in localStorage.
+// Stores avatar photos as public URLs in Supabase Storage.
+// A localStorage cache holds the public URL so reads are instant (no network).
 // Uses a custom DOM event to keep all MemberAvatar instances in sync
 // without requiring a context provider.
 
 import type { MemberId } from '@/types/council/member'
+import { createClient } from '@/lib/supabase/client'
 
 export type AvatarOwnerId = MemberId | 'user'
 
 export const AVATAR_UPDATED_EVENT = 'donna-council-avatar-updated'
+export const BUCKET = 'council-avatars'
 
 function storageKey(id: AvatarOwnerId): string {
   return `donna_council_avatar_${id}`
 }
 
-/** Read the stored data URL for a member/user (returns null if not set). */
-export function getAvatarUrl(id: AvatarOwnerId): string | null {
+/**
+ * Read the cached public URL from localStorage.
+ * If the cached value is a legacy data URL (starts with "data:"),
+ * clear it and return null so callers fall back to building the Supabase URL.
+ */
+export function getCachedAvatarUrl(id: AvatarOwnerId): string | null {
   if (typeof window === 'undefined') return null
-  return localStorage.getItem(storageKey(id))
+  const cached = localStorage.getItem(storageKey(id))
+  if (!cached) return null
+  if (cached.startsWith('data:')) {
+    // Stale legacy data URL — evict it so we fall back to Supabase URL
+    localStorage.removeItem(storageKey(id))
+    return null
+  }
+  return cached
 }
 
-const ALL_AVATAR_IDS: AvatarOwnerId[] = ['donna', 'professor', 'aega', 'user']
+/**
+ * Construct the Supabase Storage public URL for a member avatar.
+ * This is synchronous and does NOT hit the network.
+ */
+export function buildAvatarUrl(userId: string, id: AvatarOwnerId): string {
+  if (!userId) return ''
+  const supabase = createClient()
+  const path = `${userId}/${id}.jpg`
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
+  return data.publicUrl
+}
 
-/** Persist a data URL and broadcast the change to all mounted components. */
-export function setAvatarUrl(id: AvatarOwnerId, dataUrl: string | null): void {
-  if (typeof window === 'undefined') return
-  if (dataUrl) {
-    try {
-      localStorage.setItem(storageKey(id), dataUrl)
-    } catch {
-      // Storage quota — evict all OTHER avatars to make room, then retry once
-      console.warn('[council-avatars] quota exceeded — evicting others and retrying')
-      for (const otherId of ALL_AVATAR_IDS) {
-        if (otherId !== id) localStorage.removeItem(storageKey(otherId))
-      }
-      try {
-        localStorage.setItem(storageKey(id), dataUrl)
-      } catch {
-        console.error('[council-avatars] still failed after eviction — image too large')
-        return
-      }
+/**
+ * Populate the localStorage cache for all given avatar IDs without network.
+ * Called once on mount so subsequent reads are instant.
+ */
+export async function preloadAvatarUrls(userId: string, ids: AvatarOwnerId[]): Promise<void> {
+  if (typeof window === 'undefined' || !userId) return
+  for (const id of ids) {
+    if (!getCachedAvatarUrl(id)) {
+      const url = buildAvatarUrl(userId, id)
+      if (url) localStorage.setItem(storageKey(id), url)
     }
-  } else {
-    localStorage.removeItem(storageKey(id))
   }
-  window.dispatchEvent(
-    new CustomEvent(AVATAR_UPDATED_EVENT, { detail: { id } })
-  )
+}
+
+/**
+ * Upload a base64 data URL to Supabase Storage, then cache the public URL in
+ * localStorage and broadcast the change to all mounted MemberAvatar instances.
+ * Returns the public URL on success.
+ */
+export async function uploadAvatar(
+  userId: string,
+  id: AvatarOwnerId,
+  dataUrl: string,
+): Promise<string> {
+  const supabase = createClient()
+  const blob = await fetch(dataUrl).then(r => r.blob())
+  const path = `${userId}/${id}.jpg`
+
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, blob, { contentType: 'image/jpeg', upsert: true })
+
+  if (error) throw new Error(error.message)
+
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
+  const publicUrl = data.publicUrl
+
+  // Cache public URL (replaces any previous value, including old data URLs)
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(storageKey(id), publicUrl)
+  }
+
+  // Broadcast so all mounted avatar components refresh simultaneously
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent(AVATAR_UPDATED_EVENT, { detail: { id } })
+    )
+  }
+
+  return publicUrl
 }
 
 /** Compress and centre-crop a File to a square JPEG data URL. */

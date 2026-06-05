@@ -19,7 +19,11 @@ const STORAGE_KEY     = (userId: string) => `donna_council_${userId}`
 const MAX_STORED      = 60
 const MAX_API_HISTORY = 20
 
-const VALID_MEMBER_IDS = new Set(['donna', 'professor', 'aega'])
+const VALID_MEMBER_IDS = new Set([
+  'donna', 'professor', 'aega',
+  'corleone', 'abagnale', 'specter', 'paulsen',
+  'sherlock', 'reddington', 'rock',
+])
 
 function loadMessages(userId: string): CouncilMessage[] {
   try {
@@ -73,9 +77,9 @@ function isConferenceTrigger(text: string): boolean {
 
 const SUGGESTIONS = [
   "What's on my plate today?",
-  "Aega, be direct — is my spending okay?",
-  "Professor, plan out my next launch",
-  "Arrange a conference on my travel budget",
+  "Harvey, how do I close this deal?",
+  "Sherlock, what am I missing here?",
+  "Rock, I need to lock in — give me the plan",
 ]
 
 // ── Account picker (shown when Vaultr can't resolve account automatically) ────
@@ -538,7 +542,7 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
                 if (msg.round === 0) return <ConferenceBanner key={msg.id} topic={msg.roundLabel ?? ''} />
                 return <ConferenceDivider key={msg.id} label={msg.roundLabel ?? ''} round={msg.round ?? 1} />
               }
-              const el = <MemberMessage key={msg.id} message={msg} userDisplayName={displayName} />
+              const el = <MemberMessage key={msg.id} message={msg} userDisplayName={displayName} userId={userId} />
               // If this message is the account-pick prompt, append picker chips below it
               if (pendingAccountPick?.messageId === msg.id) {
                 return (
@@ -555,9 +559,9 @@ export default function CouncilChat({ userId, displayName }: CouncilChatProps) {
               return el
             })}
 
-            {typingMembers.map(id => <TypingIndicator key={id} memberId={id} />)}
+            {typingMembers.map(id => <TypingIndicator key={id} memberId={id} userId={userId} />)}
             {isBusy && typingMembers.length === 0 && !messages.some(m => m.isStreaming) && (
-              <TypingIndicator memberId="donna" />
+              <TypingIndicator memberId="donna" userId={userId} />
             )}
           </>
         )}

@@ -6,14 +6,15 @@ import { getMember } from '@/services/council/member-registry'
 
 interface TypingIndicatorProps {
   memberId: MemberId
+  userId?: string
 }
 
-export default function TypingIndicator({ memberId }: TypingIndicatorProps) {
+export default function TypingIndicator({ memberId, userId = '' }: TypingIndicatorProps) {
   const member = getMember(memberId)
 
   return (
     <div className="flex items-end gap-2 animate-fade-in">
-      <MemberAvatar memberId={memberId} size="sm" />
+      <MemberAvatar memberId={memberId} userId={userId} size="sm" />
       <div className="flex flex-col gap-0.5">
         <span className="text-[10px] font-medium px-0.5" style={{ color: member.accentColor }}>
           {member.name}
