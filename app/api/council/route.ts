@@ -3,14 +3,15 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { routeMessage } from '@/services/council/routing-engine'
 import { buildSystemPrompt } from '@/services/council/system-prompts'
-import { getMember } from '@/services/council/member-registry'
 import { getFinanceSummary, getAccounts } from '@/services/vaultr/finance'
 import { resolveVaultrUserId } from '@/services/vaultr/db'
+import { loadKnowledge } from '@/lib/knowledge/loader'
 import type { MemberId } from '@/types/council/member'
 import type { ApiCouncilMessage } from '@/types/council/message'
 import type { StreamEvent } from '@/types/council/routing'
 import type { RoutingDecision } from '@/types/council/participation'
 import type { ExpenseIntent } from '@/lib/learned-accounts'
+import type { KnowledgeBase } from '@/lib/knowledge/loader'
 
 export const runtime    = 'nodejs'
 export const maxDuration = 60
@@ -167,21 +168,29 @@ function buildApiHistory(messages: ApiCouncilMessage[]): Anthropic.MessageParam[
 
 // ── Member Response Generator ──────────────────────────────────────────────────
 
+// Max tokens per member — group-chat style enforces brevity
+const MAX_TOKENS: Record<MemberId, number> = {
+  donna:     200,
+  professor: 400,  // may need plans
+  aega:      150,
+}
+
 async function* generateMemberResponse(
   memberId: MemberId,
   messages: ApiCouncilMessage[],
   userContext: string,
   routing: RoutingDecision,
+  knowledge: KnowledgeBase | null,
   expenseIntent?: ExpenseIntent | null,
   financialContext?: string | null,
 ): AsyncGenerator<string> {
-  const member    = getMember(memberId)
   const systemPrompt = buildSystemPrompt(memberId, {
     userContext,
-    participants:    routing.participants,
-    isDonnaAlone:    routing.isDonnaAlone,
-    expenseIntent:   memberId === 'aega' ? expenseIntent : null,
-    financialContext: memberId === 'aega' ? financialContext : null,
+    participants:     routing.participants,
+    isDonnaAlone:     routing.isDonnaAlone,
+    expenseIntent:    memberId === 'donna' ? expenseIntent : null,
+    financialContext: memberId !== 'donna' ? financialContext : null,
+    knowledge,
   })
 
   const history   = buildApiHistory(messages)
@@ -194,7 +203,7 @@ async function* generateMemberResponse(
 
   const stream = await anthropic.messages.create({
     model:      'claude-haiku-4-5-20251001',
-    max_tokens: memberId === 'professor' ? 1024 : 512,
+    max_tokens: MAX_TOKENS[memberId] ?? 300,
     system:     systemPrompt,
     messages:   apiMessages,
     stream:     true,
@@ -235,12 +244,22 @@ export async function POST(req: NextRequest) {
     const lastUserMessage = messages[messages.length - 1]?.content ?? ''
     const routing = routeMessage(lastUserMessage)
 
-    // Fetch user context and financial context in parallel
+    // Fetch user context, financial context, and knowledge files in parallel
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    const [userContext, financialContext] = await Promise.all([
+
+    // Resolve display name for matching the user's .docx profile file
+    const { data: profile } = await (supabase as any)
+      .from('profiles')
+      .select('display_name')
+      .eq('id', userId)
+      .single() as { data: { display_name: string | null } | null }
+    const displayName = profile?.display_name ?? user?.email?.split('@')[0]
+
+    const [userContext, financialContext, knowledge] = await Promise.all([
       getUserContext(userId),
       user?.email ? getFinancialContext(user.email).catch(() => null) : Promise.resolve(null),
+      loadKnowledge(displayName ?? undefined).catch(() => null),
     ])
 
     const encoder = new TextEncoder()
@@ -257,7 +276,7 @@ export async function POST(req: NextRequest) {
             if (memberId === 'donna' && !routing.isDonnaAlone) {
               let donnaText = ''
               try {
-                for await (const text of generateMemberResponse(memberId, messages, userContext, routing, expenseIntent, financialContext)) {
+                for await (const text of generateMemberResponse(memberId, messages, userContext, routing, knowledge, expenseIntent, financialContext)) {
                   donnaText += text
                 }
               } catch { /* suppress errors too */ }
@@ -275,7 +294,7 @@ export async function POST(req: NextRequest) {
             send({ phase: 'member_start', memberId })
 
             try {
-              for await (const text of generateMemberResponse(memberId, messages, userContext, routing, expenseIntent, financialContext)) {
+              for await (const text of generateMemberResponse(memberId, messages, userContext, routing, knowledge, expenseIntent, financialContext)) {
                 send({ phase: 'text', memberId, text })
               }
             } catch (err) {
