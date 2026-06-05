@@ -170,9 +170,16 @@ function buildApiHistory(messages: ApiCouncilMessage[]): Anthropic.MessageParam[
 
 // Max tokens per member — group-chat style enforces brevity
 const MAX_TOKENS: Record<MemberId, number> = {
-  donna:     200,
-  professor: 400,  // may need plans
-  aega:      150,
+  donna:      200,
+  professor:  400,  // may need plans
+  aega:       150,
+  corleone:   250,
+  abagnale:   250,
+  specter:    250,
+  paulsen:    250,
+  sherlock:   300,
+  reddington: 300,
+  rock:       200,
 }
 
 async function* generateMemberResponse(
